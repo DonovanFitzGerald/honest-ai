@@ -21,9 +21,6 @@ const TestAIChat = (props: { className?: string }) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.head.querySelector(
-                        'meta[name="csrf-token"]',
-                    )?.content,
                 },
                 body: JSON.stringify({
                     prompt: inputText,
@@ -34,14 +31,11 @@ const TestAIChat = (props: { className?: string }) => {
             }
 
             const result = await response.json();
-            console.log(result);
-            const responses = result.candidates[0].content.parts;
-            console.log(responses);
+            const responses = result.parts;
             setchatResponse(responses);
-            console.log(chatResponse);
         } catch (error) {
             setIsLoading(false);
-            console.error(error.message);
+            console.error(error);
             setErrorMessage(error.message);
         } finally {
             setIsLoading(false);
