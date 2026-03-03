@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -24,6 +24,13 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
+type ChatNavItem = {
+    id: number;
+    title: string;
+    updated_at?: string;
+    href: string;
+};
+
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
@@ -38,6 +45,9 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { props } = usePage<{ chats?: ChatNavItem[] }>();
+    const chats = props.chats ?? [];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -54,6 +64,15 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                <SidebarMenu>
+                    {chats.map((c) => (
+                        <SidebarMenuItem key={c.id}>
+                            <SidebarMenuButton asChild>
+                                <Link href={c.href}>{c.title}</Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
             </SidebarContent>
 
             <SidebarFooter>

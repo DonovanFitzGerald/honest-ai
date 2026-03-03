@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\AiController;
+use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -15,6 +16,8 @@ Route::get('/', function () {
 Route::get('dashboard', function () {
     return Inertia::render('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
 
 
 require __DIR__ . '/settings.php';
