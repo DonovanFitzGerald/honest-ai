@@ -13,6 +13,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import chat from '@/routes/chat';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
 
@@ -68,7 +69,9 @@ export function AppSidebar() {
                     {chats.map((c) => (
                         <SidebarMenuItem key={c.id}>
                             <SidebarMenuButton asChild>
-                                <Link href={c.href}>{c.title}</Link>
+                                <Link href={chat.show(c.id).url} prefetch>
+                                    {c.title}
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     ))}

@@ -17,7 +17,9 @@ Route::get('dashboard', function () {
     return Inertia::render('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+Route::get('/chat/{id}', [ChatController::class, 'show'])
+    ->middleware(['auth', 'verified'])
+    ->name('chat.show');
 
 
 require __DIR__ . '/settings.php';
