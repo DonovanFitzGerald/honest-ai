@@ -51,7 +51,7 @@ class HandleInertiaRequests extends Middleware
                         'id' => $c->id,
                         'title' => $c->title ?: 'Untitled chat',
                         'updated_at' => optional($c->updated_at)->toISOString(),
-                        'href' => route('chat.show', ['id' => $c->id]),
+                        'href' => route('chat.show', ['chat' => $c]),
                     ])
                 : [],
         ];
