@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import MarkdownText from './markdown-text';
 
 type Message = {
     id: number;
@@ -36,13 +37,15 @@ export default function ChatMessage({
                 data-slot="message"
                 {...props}
                 className={cn(
-                    'rounded-3xl px-6 py-3',
+                    'w-full rounded-3xl px-6 py-3',
                     isUser && 'max-w-[70%] bg-neutral-100 text-black',
                     !isUser && !isAssistant && 'bg-neutral-200 text-black',
                     className,
                 )}
             >
-                <div>{message.content}</div>
+                <div className="w-full">
+                    <MarkdownText content={message.content} />
+                </div>
 
                 <div className="mt-2 text-[11px] opacity-70">
                     {message.created_at
