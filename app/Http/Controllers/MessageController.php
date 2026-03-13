@@ -28,7 +28,7 @@ class MessageController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-     public function store(Request $request, Chat $chat)
+    public function store(Request $request, Chat $chat)
     {
         $request->validate([
             'content' => ['required', 'string'],
@@ -39,25 +39,24 @@ class MessageController extends Controller
                 ->lockForUpdate()
                 ->max('sequence') ?? 0) + 1;
 
-            $userMessage = Message::create([
+            Message::create([
                 'chat_id' => $chat->id,
                 'role' => 'user',
-                'content' => $request->content,
+                'content' => $request->input('content'),
                 'sequence' => $nextSequence,
             ]);
 
-            $assistantReply = $this->fakeAssistantReply($request->content);
+            $assistantReply = $this->fakeAssistantReply($request->input('content'));
 
             Message::create([
                 'chat_id' => $chat->id,
                 'role' => 'assistant',
                 'content' => $assistantReply,
                 'sequence' => $nextSequence + 1,
-                'parent_message_id' => $userMessage->id, // only if you kept this column
             ]);
         });
 
-        return redirect()->route('chats.show', $chat);
+        return redirect()->route('chat.show', $chat);
     }
 
     protected function fakeAssistantReply(string $content): string

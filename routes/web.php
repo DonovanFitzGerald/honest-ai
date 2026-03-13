@@ -22,8 +22,7 @@ Route::get('/chat/{chat}', [ChatController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('chat.show');
 
-
-Route::post('/chats/{chat}/messages', [MessageController::class, 'store'])
-    ->name('chats.messages.store');
+Route::post('/chat/{chat}/messages', [MessageController::class, 'store'])
+    ->name('chat.messages.store');
 
 require __DIR__ . '/settings.php';

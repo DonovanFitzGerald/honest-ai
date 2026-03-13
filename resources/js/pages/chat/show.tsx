@@ -27,7 +27,7 @@ export default function Show({ chat, messages }) {
         if (!content.trim() || sending) return;
 
         router.post(
-            route('chats.messages.store', chat.id),
+            route('chat.messages.store', { chat: chat.id }),
             { content },
             {
                 preserveScroll: true,
