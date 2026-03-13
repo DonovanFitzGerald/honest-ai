@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\AiController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\MessageController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -21,5 +22,8 @@ Route::get('/chat/{chat}', [ChatController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('chat.show');
 
+
+Route::post('/chats/{chat}/messages', [MessageController::class, 'store'])
+    ->name('chats.messages.store');
 
 require __DIR__ . '/settings.php';

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Message;
+use App\Models\Chat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MessageController extends Controller
 {
@@ -26,10 +28,43 @@ class MessageController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+     public function store(Request $request, Chat $chat)
     {
-        //
+        $request->validate([
+            'content' => ['required', 'string'],
+        ]);
+
+        DB::transaction(function () use ($chat, $request) {
+            $nextSequence = (Message::where('chat_id', $chat->id)
+                ->lockForUpdate()
+                ->max('sequence') ?? 0) + 1;
+
+            $userMessage = Message::create([
+                'chat_id' => $chat->id,
+                'role' => 'user',
+                'content' => $request->content,
+                'sequence' => $nextSequence,
+            ]);
+
+            $assistantReply = $this->fakeAssistantReply($request->content);
+
+            Message::create([
+                'chat_id' => $chat->id,
+                'role' => 'assistant',
+                'content' => $assistantReply,
+                'sequence' => $nextSequence + 1,
+                'parent_message_id' => $userMessage->id, // only if you kept this column
+            ]);
+        });
+
+        return redirect()->route('chats.show', $chat);
     }
+
+    protected function fakeAssistantReply(string $content): string
+    {
+        return "You said: {$content}";
+    }
+
 
     /**
      * Display the specified resource.

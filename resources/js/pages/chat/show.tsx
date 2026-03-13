@@ -1,17 +1,17 @@
+import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import UserMessage from '@/components/ui/user-message';
+import { route } from 'ziggy-js';
+import ChatMessage from '@/components/ui/chat-message';
 import AppLayout from '@/layouts/app-layout';
 
-export default function Show({ chat }) {
+export default function Show({ chat, messages }) {
     const breadcrumbs = [
         { title: chat.title ?? `Chat #${chat.id}`, href: `/chat/${chat.id}` },
     ];
+    const [sending, setSending] = useState(false);
+    const [awaitingResponse, setAwaitingResponse] = useState(false);
 
-    const [messages, setMessages] = useState([
-        'ipsum dolor sit amet consectetur adipisicing elit. Voluptates, quidem amet obcaecati odio reprehenderit enim ipsam natus temporibus iure maiores vero vitae consequatur harum saepe repellendus minima molestias autem excepturi',
-        'ipsum dolor sit amet consectetur adipisicing elit. Voluptates, quidem amet obcaecati odio reprehenderit enim ipsam natus temporibus iure maiores vero vitae consequatur harum saepe repellendus minima molestias autem excepturi',
-    ]);
-
+    // Input box handlers
     const [inputText, setinputText] = useState('');
     const handleInputChange = (e) => {
         setinputText(e.target.value);
@@ -20,20 +20,29 @@ export default function Show({ chat }) {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        handleMessageSubmit(inputText);
+        handleInputSubmit(inputText);
     };
 
-    const handleMessageSubmit = (text) => {
-        setMessages((prev) => {
-            return [...prev, text];
-        });
+    const handleInputSubmit = (content: string) => {
+        if (!content.trim() || sending) return;
+
+        router.post(
+            route('chats.messages.store', chat.id),
+            { content },
+            {
+                preserveScroll: true,
+                onStart: () => setSending(true),
+                onFinish: () => setSending(false),
+                onSuccess: () => setinputText(''),
+            },
+        );
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="flex flex-col gap-4 p-4">
                 {messages.map((m) => {
-                    return <UserMessage content={m} />;
+                    return <ChatMessage message={m} />;
                 })}
             </div>
             <div className="mt-auto flex w-full justify-center p-8">
