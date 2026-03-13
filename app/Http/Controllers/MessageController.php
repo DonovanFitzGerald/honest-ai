@@ -29,7 +29,7 @@ class MessageController extends Controller
             ]);
         });
 
-        $assistantReply = $assistantService->call($validated['content']);
+        $assistantReply = $assistantService->call($chat);
 
         $assistantText = data_get($assistantReply, 'candidates.0.content.parts.0.text');
         $assistantModel = data_get($assistantReply, 'modelVersion');
