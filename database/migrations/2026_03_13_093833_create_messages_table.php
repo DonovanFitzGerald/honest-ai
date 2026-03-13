@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-
+use App\Models\Chat;
 return new class extends Migration
 {
     /**
@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor('Chat')->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Chat::class)->constrained()->cascadeOnDelete();
             $table->string('role');
             $table->longText('content');
             $table->unsignedInteger('sequence');
