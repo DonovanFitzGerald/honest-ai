@@ -157,18 +157,20 @@ export default function Show({
                     </div>
                 </div>
 
-                <Collapsible>
-                    {useLog && (
-                        <>
-                            <CollapsibleTrigger>
-                                <h1>Use Log</h1>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <UseLogDisplay useLog={useLog} />
-                            </CollapsibleContent>
-                        </>
-                    )}
-                </Collapsible>
+                <div className="max-h-[90vh] overflow-auto">
+                    <Collapsible>
+                        {useLog && (
+                            <>
+                                <CollapsibleTrigger>
+                                    <h1>Use Log</h1>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <UseLogDisplay useLog={useLog} />
+                                </CollapsibleContent>
+                            </>
+                        )}
+                    </Collapsible>
+                </div>
             </div>
         </AppLayout>
     );

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Chat;
 use App\Models\UseLog;
+use App\Models\UseLogCase;
 use App\Services\AssistantService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,12 +22,30 @@ class UseLogController extends Controller
             ->implode("\n");
 
         $useLog = DB::transaction(function () use ($chat, $useLogData, $chatSnapshot) {
-            return UseLog::create([
+            $useLog = UseLog::create([
                 'chat_id' => $chat->id,
                 'total_use_cases' => $useLogData['total_use_cases'],
+                'summary_statement' => $useLogData['summary_statement'],
                 'raw_output' => json_encode($useLogData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
                 'chat_snapshot' => $chatSnapshot,
             ]);
+
+            $useLog->cases()->createMany(
+                collect($useLogData['use_cases'] ?? [])
+                    ->values()
+                    ->map(fn(array $useCase, int $index) => [
+                        'position' => $index + 1,
+                        'label' => $useCase['label'],
+                        'evidence' => $useCase['evidence'],
+                        'input_type' => $useCase['input_type'],
+                        'output_type' => $useCase['output_type'],
+                        'ai_role' => $useCase['ai_role'],
+                        'confidence' => $useCase['confidence'],
+                    ])
+                    ->all()
+            );
+
+            return $useLog->load('cases');
         });
 
         return response()->json([

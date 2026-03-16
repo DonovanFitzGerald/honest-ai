@@ -15,8 +15,8 @@ return new class extends Migration {
             $table->id();
             $table->foreignIdFor(Chat::class, 'chat_id')->constrained('chats')->cascadeOnDelete();
             $table->unsignedInteger('total_use_cases')->default(0);
-
             $table->longText('raw_output');
+            $table->text('summary_statement')->nullable();
             $table->longText('chat_snapshot')->nullable();
 
             $table->timestamps();
