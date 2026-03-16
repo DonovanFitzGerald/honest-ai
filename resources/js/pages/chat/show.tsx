@@ -8,77 +8,15 @@ import {
 } from '@/components/ui/collapsible';
 import { UseLogDisplay } from '@/components/ui/use-log';
 import AppLayout from '@/layouts/app-layout';
+import type { Message, AssistantUseLog, Chat } from '@/types/assistant';
 
-type Message = {
-    id: number | string;
-    chat_id: number;
-    role: string;
-    content: string;
-    sequence: number;
-    model?: string | null;
-    created_at?: string | null;
-    updated_at?: string | null;
-};
-
-type InputType =
-    | 'question'
-    | 'instructions'
-    | 'draft text'
-    | 'outline'
-    | 'code'
-    | 'data'
-    | 'image prompt'
-    | 'error message'
-    | 'reflection notes'
-    | 'research topic'
-    | 'citation request'
-    | 'mixed';
-
-type OutputType =
-    | 'explanation'
-    | 'summary'
-    | 'rewrite'
-    | 'ideas'
-    | 'outline'
-    | 'code'
-    | 'debugging help'
-    | 'examples'
-    | 'feedback'
-    | 'grammar correction'
-    | 'structure advice'
-    | 'citations'
-    | 'plan'
-    | 'mixed';
-
-type AiRole =
-    | 'tutor'
-    | 'editor'
-    | 'brainstorm partner'
-    | 'coding assistant'
-    | 'research assistant'
-    | 'formatter'
-    | 'reviewer';
-
-type Confidence = 'High' | 'Medium' | 'Low';
-
-type UseCase = {
-    label: string;
-    evidence: string;
-    input_type: InputType[];
-    output_type: OutputType[];
-    ai_role: AiRole;
-    confidence: Confidence;
-};
-
-type AiUseLog =
-    | {
-          total_use_cases: number;
-          use_cases: UseCase[];
-          summary_statement: string;
-      }
-    | undefined;
-
-export default function Show({ chat, messages: initialMessages }: any) {
+export default function Show({
+    chat,
+    messages: initialMessages,
+}: {
+    chat: Chat;
+    messages: Message[];
+}) {
     const breadcrumbs = [
         { title: chat.title ?? `Chat #${chat.id}`, href: `/chat/${chat.id}` },
     ];
@@ -86,7 +24,7 @@ export default function Show({ chat, messages: initialMessages }: any) {
     const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
     const [sending, setSending] = useState(false);
     const [inputText, setInputText] = useState('');
-    const [useLog, setUseLog] = useState<AiUseLog>(undefined);
+    const [useLog, setUseLog] = useState<AssistantUseLog>(undefined);
     const conversationDiv = useRef<HTMLDivElement | null>(null);
 
     const csrf =
@@ -134,7 +72,7 @@ export default function Show({ chat, messages: initialMessages }: any) {
         setSending(true);
         setInputText('');
 
-        const tempId = `temp-user-${Date.now()}`;
+        const tempId = Date.now();
         const tempUserMessage: Message = {
             id: tempId,
             chat_id: chat.id,
