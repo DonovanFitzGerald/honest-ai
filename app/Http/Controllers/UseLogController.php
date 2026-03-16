@@ -14,10 +14,7 @@ class UseLogController extends Controller
     {
         $assistantReply = $assistantService->createUseLog($chat);
 
-        $rawText = data_get($assistantReply, 'candidates.0.content.parts.0.text');
-        if (!is_string($rawText) || trim($rawText) === '') {
-            $rawText = 'AI_USE_LOG' . "\n" . 'TOTAL_USE_CASES: 0';
-        }
+        $rawText = $this->parseAssitantResponse($assistantReply);
 
         $total = $this->parseTotalUseCases($rawText);
 
@@ -42,10 +39,26 @@ class UseLogController extends Controller
         ]);
     }
 
+    private function parseAssitantResponse($assistantReply)
+    {
+        $rawParts = data_get($assistantReply, 'candidates.0.content.parts', []);
+        $textParts = array_column($rawParts, 'text');
+        $jointResponses = implode('', $textParts);
+        $cleanedResponses = str_replace(["\n", "\r"], '', $jointResponses);
+
+        return $cleanedResponses;
+    }
+
+    private function parseSummary(string $raw): string
+    {
+        if (preg_match('/SUMMARY:\s*(\d+)/i', $raw, $matches)) {
+            return (int) $matches[1];
+        }
+    }
     private function parseTotalUseCases(string $raw): int
     {
-        if (preg_match('/TOTAL_USE_CASES:\s*(\d+)/i', $raw, $m)) {
-            return (int) $m[1];
+        if (preg_match('/TOTAL_USE_CASES:\s*(\d+)/i', $raw, $matches)) {
+            return (int) $matches[1];
         }
 
         preg_match_all('/^\s*\d+\.\s*USE_CASE:/mi', $raw, $matches);
