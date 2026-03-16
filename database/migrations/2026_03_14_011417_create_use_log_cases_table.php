@@ -13,7 +13,7 @@ return new class extends Migration {
     {
         Schema::create('use_log_cases', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(UseLog::class, 'use_log_id')->constrained('ai_use_logs')->cascadeOnDelete();
+            $table->foreignIdFor(UseLog::class, 'use_log_id')->constrained()->cascadeOnDelete();
             $table->string('use_case_label', 100);
             $table->text('evidence');
             $table->string('ai_role', 50);
