@@ -47,12 +47,17 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { props } = usePage<{ chats?: ChatNavItem[] }>();
+    const { props, url } = usePage<{ chats?: ChatNavItem[] }>();
     const chats = props.chats ?? [];
 
     const createChat = () => {
         router.post(chat.store().url, {}, { preserveScroll: true });
     };
+
+    const currentChatId = (() => {
+        const match = url.match(/^\/chat\/(\d+)(?:\/)?(?:\?.*)?$/);
+        return match ? Number(match[1]) : null;
+    })();
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -85,15 +90,21 @@ export function AppSidebar() {
                     </SidebarMenu>
                 </SidebarGroup>
                 <SidebarMenu>
-                    {chats.map((c) => (
-                        <SidebarMenuItem key={c.id}>
-                            <SidebarMenuButton asChild>
-                                <Link href={chat.show(c.id).url} prefetch>
-                                    {c.title}
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    ))}
+                    {chats.map((c) => {
+                        const isActive = currentChatId === c.id;
+                        return (
+                            <SidebarMenuItem key={c.id}>
+                                <SidebarMenuButton
+                                    asChild
+                                    className={isActive ? 'bg-neutral-100' : ''}
+                                >
+                                    <Link href={chat.show(c.id).url} prefetch>
+                                        {c.title}
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        );
+                    })}
                 </SidebarMenu>
             </SidebarContent>
 
