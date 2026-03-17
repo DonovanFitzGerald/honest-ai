@@ -8,14 +8,16 @@ import {
 } from '@/components/ui/collapsible';
 import { UseLogDisplay } from '@/components/ui/use-log';
 import AppLayout from '@/layouts/app-layout';
-import type { Message, AssistantUseLog, Chat } from '@/types/assistant';
+import type { Message, UseLog, Chat } from '@/types/assistant';
 
 export default function Show({
     chat,
     messages: initialMessages,
+    useLog: initialUseLog,
 }: {
     chat: Chat;
     messages: Message[];
+    useLog: UseLog;
 }) {
     const breadcrumbs = [
         { title: chat.title ?? `Chat #${chat.id}`, href: `/chat/${chat.id}` },
@@ -24,7 +26,7 @@ export default function Show({
     const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
     const [sending, setSending] = useState(false);
     const [inputText, setInputText] = useState('');
-    const [useLog, setUseLog] = useState<AssistantUseLog>(undefined);
+    const [useLog, setUseLog] = useState<UseLog>(initialUseLog);
     const conversationDiv = useRef<HTMLDivElement | null>(null);
 
     const csrf =

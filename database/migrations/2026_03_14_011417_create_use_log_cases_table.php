@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->text('evidence');
             $table->json('input_type');
             $table->json('output_type');
-            $table->string('ai_role', 50);
+            $table->string('assistant_role', 50);
             $table->string('confidence', 10);
             $table->timestamps();
             $table->index(['use_log_id', 'position']);

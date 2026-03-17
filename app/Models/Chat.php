@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\UseLog;
 
 class Chat extends Model
 {
@@ -12,6 +13,11 @@ class Chat extends Model
 
     public function messages()
     {
-        return $this->hasMany(Message::class)->orderBy('sequence');
+        return $this->hasMany(Message::class);
+    }
+
+    public function useLogs()
+    {
+        return $this->hasMany(UseLog::class);
     }
 }

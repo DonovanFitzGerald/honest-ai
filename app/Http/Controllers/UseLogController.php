@@ -30,7 +30,7 @@ class UseLogController extends Controller
                 'chat_snapshot' => $chatSnapshot,
             ]);
 
-            $useLog->cases()->createMany(
+            $useLog->use_cases()->createMany(
                 collect($useLogData['use_cases'] ?? [])
                     ->values()
                     ->map(fn(array $useCase, int $index) => [
@@ -39,13 +39,13 @@ class UseLogController extends Controller
                         'evidence' => $useCase['evidence'],
                         'input_type' => $useCase['input_type'],
                         'output_type' => $useCase['output_type'],
-                        'ai_role' => $useCase['ai_role'],
+                        'assistant_role' => $useCase['assistant_role'],
                         'confidence' => $useCase['confidence'],
                     ])
                     ->all()
             );
 
-            return $useLog->load('cases');
+            return $useLog->load('use_cases');
         });
 
         return response()->json([

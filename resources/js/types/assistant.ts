@@ -44,7 +44,7 @@ export type OutputType =
     | 'plan'
     | 'mixed';
 
-export type AiRole =
+export type AssistantRole =
     | 'tutor'
     | 'editor'
     | 'brainstorm partner'
@@ -60,11 +60,11 @@ export type UseCase = {
     evidence: string;
     input_type: InputType[];
     output_type: OutputType[];
-    ai_role: AiRole;
+    assistant_role: AssistantRole;
     confidence: Confidence;
 };
 
-export type AssistantUseLog =
+export type UseLog =
     | {
           total_use_cases: number;
           use_cases: UseCase[];

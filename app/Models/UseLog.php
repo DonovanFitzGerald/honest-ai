@@ -18,7 +18,7 @@ class UseLog extends Model
         'chat_snapshot'
     ];
 
-    public function cases(): HasMany
+    public function use_cases(): HasMany
     {
         return $this->hasMany(UseLogCase::class)->orderBy('position');
     }

@@ -55,14 +55,14 @@ TOTAL_USE_CASES: <number>
    EVIDENCE: <one sentence explaining the student’s purpose>
    INPUT_TYPE: <choose one or more from the allowed list, comma-separated>
    OUTPUT_TYPE: <choose one or more from the allowed list, comma-separated>
-   AI_ROLE: <choose exactly one from the allowed list>
+   ASSISTANT_ROLE: <choose exactly one from the allowed list>
    CONFIDENCE: <High|Medium|Low>
 
 2. USE_CASE: <label under 100 characters>
    EVIDENCE: <one sentence explaining the student’s purpose>
    INPUT_TYPE: <...>
    OUTPUT_TYPE: <...>
-   AI_ROLE: <...>
+   ASSISTANT_ROLE: <...>
    CONFIDENCE: <...>
 
 Continue numbering as needed.
@@ -125,7 +125,7 @@ Choose one or more:
 - plan
 - mixed
 
-ALLOWED AI_ROLE VALUES
+ALLOWED ASSISTANT_ROLE VALUES
 
 Choose exactly one:
 

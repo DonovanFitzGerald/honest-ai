@@ -18,7 +18,7 @@ class UseLogCase extends Model
         'evidence',
         'input_type',
         'output_type',
-        'ai_role',
+        'assistant_role',
         'confidence',
     ];
 

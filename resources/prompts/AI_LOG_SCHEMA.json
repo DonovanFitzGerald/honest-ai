@@ -67,7 +67,7 @@
                         },
                         "minItems": 1
                     },
-                    "ai_role": {
+                    "assistant_role": {
                         "type": "string",
                         "description": "Exactly one allowed AI role.",
                         "enum": [
@@ -91,7 +91,7 @@
                     "evidence",
                     "input_type",
                     "output_type",
-                    "ai_role",
+                    "assistant_role",
                     "confidence"
                 ],
                 "additionalProperties": false

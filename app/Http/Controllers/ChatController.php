@@ -15,6 +15,10 @@ class ChatController extends Controller
             'messages' => $chat->messages()
                 ->orderBy('sequence')
                 ->get(),
+            'useLog' => $chat->useLogs()
+                ->with(['use_cases' => fn($row) => $row->orderBy('position')])
+                ->latest('created_at')
+                ->first(),
         ]);
     }
 }
