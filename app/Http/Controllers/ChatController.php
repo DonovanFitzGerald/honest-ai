@@ -8,6 +8,15 @@ use Inertia\Inertia;
 
 class ChatController extends Controller
 {
+    public function store(Request $request)
+    {
+        $chat = Chat::create([
+            'title' => 'New chat',
+        ]);
+
+        return redirect()->route('chat.show', $chat);
+    }
+
     public function show(Chat $chat)
     {
         return inertia('chat/show', [

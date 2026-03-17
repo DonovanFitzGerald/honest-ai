@@ -2,6 +2,7 @@ import type { UseLog, UseCase } from '@/types/assistant';
 
 const UseLogDisplay = ({ useLog }: { useLog: UseLog }) => {
     if (!useLog) return;
+    console.log(useLog);
     return (
         <div className="mx-auto flex max-w-2xl flex-1 flex-col gap-6 p-6">
             <div className="border-b pb-4">

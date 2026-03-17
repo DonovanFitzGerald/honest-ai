@@ -159,11 +159,11 @@ export default function Show({
                     </div>
                 </div>
 
-                <div className="max-h-[90vh] overflow-auto">
+                <div className="overflow-auto">
                     <Collapsible>
                         {useLog && (
                             <>
-                                <CollapsibleTrigger>
+                                <CollapsibleTrigger className="absolute top-4 right-8">
                                     <h1>Use Log</h1>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>

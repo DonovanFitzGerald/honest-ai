@@ -11,6 +11,10 @@ class Chat extends Model
     /** @use HasFactory<\Database\Factories\ChatFactory> */
     use HasFactory;
 
+    protected $fillable = [
+        'title'
+    ];
+
     public function messages()
     {
         return $this->hasMany(Message::class);

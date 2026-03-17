@@ -18,6 +18,10 @@ Route::get('dashboard', function () {
     return Inertia::render('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::post('/chats', [ChatController::class, 'store'])
+    ->middleware(['auth', 'verified'])
+    ->name('chat.store');
+
 Route::get('/chat/{chat}', [ChatController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('chat.show');

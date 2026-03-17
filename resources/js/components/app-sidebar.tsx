@@ -1,5 +1,5 @@
-import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { Link, usePage, router } from '@inertiajs/react';
+import { BookOpen, Folder, LayoutGrid, Plus } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -7,6 +7,7 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
+    SidebarGroup,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -49,6 +50,10 @@ export function AppSidebar() {
     const { props } = usePage<{ chats?: ChatNavItem[] }>();
     const chats = props.chats ?? [];
 
+    const createChat = () => {
+        router.post(chat.store().url, {}, { preserveScroll: true });
+    };
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -65,6 +70,20 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                <SidebarGroup className="px-2 py-0">
+                    <SidebarMenu>
+                        <SidebarMenuItem key="NewChat">
+                            <SidebarMenuButton
+                                tooltip="Create a new chat"
+                                onClick={createChat}
+                                className="cursor-pointer"
+                            >
+                                <Plus className="size-4" />
+                                <span>New chat</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroup>
                 <SidebarMenu>
                     {chats.map((c) => (
                         <SidebarMenuItem key={c.id}>
