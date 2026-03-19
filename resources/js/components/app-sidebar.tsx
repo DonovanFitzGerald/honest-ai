@@ -52,7 +52,16 @@ export function AppSidebar() {
     const sidebarChats = props.sidebarChats ?? [];
 
     const createChat = () => {
-        router.post(chats.store().url, {}, { preserveScroll: true });
+        router.post(
+            chats.store().url,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    router.reload({ only: ['sidebarChats'] });
+                },
+            },
+        );
     };
 
     const currentChatId = (() => {
