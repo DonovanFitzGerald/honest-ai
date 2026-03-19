@@ -63,6 +63,9 @@ export function AppSidebar() {
     const deleteChat = (id: number) => {
         router.delete(chats.destroy(id).url, {
             preserveScroll: true,
+            onSuccess: () => {
+                router.reload({ only: ['sidebarChats'] });
+            },
         });
     };
 
