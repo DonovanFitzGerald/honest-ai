@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\UseLogCase;
+use App\Models\Message;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $cases = UseLogCase::query()->get(['input_type', 'output_type', 'assistant_role']);
+        $cases = UseLogCase::query()->get(['input_type', 'output_type', 'assistant_role',]);
+        $prompts = Message::query()->where('role', 'user')->get(['created_at']);
+        $assistant_responses = Message::query()->where('role', 'assistant')->get(['raw_json']);
 
         $inputCounts = [];
         $outputCounts = [];
@@ -34,27 +37,17 @@ class DashboardController extends Controller
 
         return Inertia::render('dashboard', [
             'chartCounts' => [
-                'inputs' => $this->topNPlusOther($inputCounts, 6),
-                'outputs' => $this->topNPlusOther($outputCounts, 6),
-                'roles' => $this->topNPlusOther($roleCounts, 10),
+                'inputs' => $this->formatLabels($inputCounts),
+                'outputs' => $this->formatLabels($outputCounts),
+                'roles' => $this->formatLabels($roleCounts),
             ],
         ]);
     }
 
-    private function topNPlusOther(array $counts, int $n): array
+    private function formatLabels(array $counts): array
     {
         $labels = array_keys($counts);
         $values = array_values($counts);
-
-        $topLabels = array_slice($labels, 0, $n);
-        $topValues = array_slice($values, 0, $n);
-
-        $other = array_sum(array_slice($values, $n));
-        if ($other > 0) {
-            $topLabels[] = 'Other';
-            $topValues[] = $other;
-        }
-
-        return ['labels' => $topLabels, 'values' => $topValues];
+        return ['labels' => $labels, 'values' => $values];
     }
 }
