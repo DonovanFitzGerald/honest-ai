@@ -3,7 +3,6 @@ import type { UseLog, UseCase } from '@/types/assistant';
 
 const UseLogDisplay = ({ useLog }: { useLog: UseLog }) => {
     if (!useLog) return;
-    console.log(useLog);
     return (
         <div className="mx-auto flex max-w-2xl flex-1 flex-col gap-6 border-l border-sidebar-border/50 p-6">
             <div className="">
@@ -45,7 +44,7 @@ const UseCaseCard = ({
                     <div>
                         {useCase.input_type.map((t, i) => {
                             return (
-                                <p>
+                                <p key={`${index}-in-${i}`}>
                                     {t}
                                     {i + 1 !== useCase.output_type.length
                                         ? ','
@@ -58,7 +57,7 @@ const UseCaseCard = ({
                     <div>
                         {useCase.output_type.map((t, i) => {
                             return (
-                                <p>
+                                <p key={`${index}-out-${i}`}>
                                     {t}
                                     {i + 1 == useCase.output_type.length
                                         ? ','
