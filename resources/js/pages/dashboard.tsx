@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import AppLayout from '@/layouts/app-layout';
+import { createHexGradientArray } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
@@ -47,16 +48,11 @@ export default function Dashboard() {
                         data={makeData(
                             chartCounts.inputs.labels,
                             chartCounts.inputs.values,
-                            [
+                            createHexGradientArray(
                                 '#F2FBF4',
-                                '#E3F7E8',
-                                '#CFF1DA',
-                                '#B7E7C9',
-                                '#9FDDB7',
-                                '#86D1A3',
-                                '#6FC48F',
-                                '#57B87C',
-                            ],
+                                '#069971',
+                                chartCounts.inputs.values.length,
+                            ),
                         )}
                     />
                 </div>
@@ -67,16 +63,11 @@ export default function Dashboard() {
                         data={makeData(
                             chartCounts.outputs.labels,
                             chartCounts.outputs.values,
-                            [
+                            createHexGradientArray(
                                 '#FFF1F3',
-                                '#FFE4E9',
-                                '#FFD2DA',
-                                '#FFBEC9',
-                                '#F8A7B6',
-                                '#EE8FA1',
-                                '#E4778C',
-                                '#D85F78',
-                            ],
+                                '#BF0F35',
+                                chartCounts.outputs.values.length,
+                            ),
                         )}
                     />
                 </div>
@@ -89,16 +80,11 @@ export default function Dashboard() {
                         data={makeData(
                             chartCounts.roles.labels,
                             chartCounts.roles.values,
-                            [
+                            createHexGradientArray(
                                 '#FFFBEA',
-                                '#FFF3C4',
-                                '#FFE8A3',
-                                '#FFDC7A',
-                                '#FFD05E',
-                                '#F6C44D',
-                                '#EAB73E',
-                                '#DDAA2F',
-                            ],
+                                '#E68309',
+                                chartCounts.roles.values.length,
+                            ),
                         )}
                     />
                 </div>
