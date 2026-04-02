@@ -16,7 +16,7 @@ export default function MarkdownText({ content }: { content: string }) {
                     ),
                     pre: (props) => (
                         <pre
-                            className="overflow-x-auto rounded-lg bg-neutral-100 p-4"
+                            className="max-h-96 overflow-auto rounded-lg bg-neutral-100 p-4"
                             {...props}
                         />
                     ),

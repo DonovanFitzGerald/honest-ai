@@ -135,6 +135,21 @@
 @layer base {
     * {
         @apply border-border;
+        scrollbar-color: oklch(0.75 0 0) transparent;
+    }
+
+    *::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background: oklch(0.75 0 0);
+        border-radius: 9999px;
     }
 
     body {
