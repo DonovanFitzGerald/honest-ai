@@ -1,5 +1,5 @@
-import { Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Plus, Trash2 } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -13,11 +13,11 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
-import chats from '@/routes/chats';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
+import { ChatNewButton } from './chat-new-button';
+import { ChatSidebarItem } from './chat-sidebar-item';
 
 const mainNavItems: NavItem[] = [
     {
@@ -51,32 +51,10 @@ export function AppSidebar() {
     const { props, url } = usePage<{ sidebarChats?: ChatNavItem[] }>();
     const sidebarChats = props.sidebarChats ?? [];
 
-    const createChat = () => {
-        router.post(
-            chats.store().url,
-            {},
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    router.reload({ only: ['sidebarChats'] });
-                },
-            },
-        );
-    };
-
     const currentChatId = (() => {
         const match = url.match(/^\/chats\/(\d+)(?:\/)?(?:\?.*)?$/);
         return match ? Number(match[1]) : null;
     })();
-
-    const deleteChat = (id: number) => {
-        router.delete(chats.destroy(id).url, {
-            preserveScroll: true,
-            onSuccess: () => {
-                router.reload({ only: ['sidebarChats'] });
-            },
-        });
-    };
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -96,51 +74,18 @@ export function AppSidebar() {
                 <NavMain items={mainNavItems} />
                 <SidebarGroup className="px-2 py-0">
                     <SidebarMenu>
-                        <SidebarMenuItem key="NewChat">
-                            <SidebarMenuButton
-                                tooltip="Create a new chat"
-                                onClick={createChat}
-                                className="cursor-pointer"
-                            >
-                                <Plus className="size-4" />
-                                <span>New chat</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        <ChatNewButton />
                     </SidebarMenu>
                 </SidebarGroup>
                 <SidebarMenu>
                     {sidebarChats.map((c) => {
                         const isActive = currentChatId === c.id;
                         return (
-                            <SidebarMenuItem key={c.id}>
-                                <SidebarMenuButton
-                                    className={cn(
-                                        'group/chat',
-                                        isActive ? 'bg-neutral-100' : '',
-                                    )}
-                                >
-                                    <Link
-                                        href={chats.show(c.id).url}
-                                        prefetch
-                                        className="flex-1 truncate"
-                                    >
-                                        {c.title}
-                                    </Link>
-
-                                    <a
-                                        type="button"
-                                        className="ml-2 hidden cursor-pointer rounded-sm p-1 text-neutral-500 group-hover/chat:inline-flex"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            deleteChat(c.id);
-                                        }}
-                                        title="delete chat"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </a>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
+                            <ChatSidebarItem
+                                key={c.id}
+                                chat={c}
+                                isActive={isActive}
+                            />
                         );
                     })}
                 </SidebarMenu>

@@ -143,6 +143,8 @@ function makeBarData(
                 backgroundColor,
                 borderRadius: 8,
                 borderSkipped: false,
+                categoryPercentage: 0.9,
+                barPercentage: 0.95,
             },
         ],
     };
