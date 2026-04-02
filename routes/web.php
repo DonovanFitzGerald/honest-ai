@@ -27,6 +27,10 @@ Route::get('/chats/{chat}', [ChatController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('chats.show');
 
+Route::put('/chats/{chat}', [ChatController::class, 'update'])
+    ->middleware(['auth', 'verified'])
+    ->name('chats.update');
+
 Route::delete('/chats/{chat}', [ChatController::class, 'destroy'])
     ->middleware(['auth', 'verified'])
     ->name('chats.destroy');

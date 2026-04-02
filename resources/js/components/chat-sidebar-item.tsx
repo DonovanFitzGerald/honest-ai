@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
-import { Ellipsis, Trash2 } from 'lucide-react';
+import { Check, Ellipsis, Pencil, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import chats from '@/routes/chats';
@@ -11,6 +12,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuItem,
 } from './ui/dropdown-menu';
+import { Input } from './ui/input';
 
 export function ChatSidebarItem({
     chat,
@@ -19,6 +21,10 @@ export function ChatSidebarItem({
     chat: Chat;
     isActive: boolean;
 }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [title, setTitle] = useState(chat.title);
+    const [newTitle, setNewTitle] = useState(chat.title);
+
     const deleteChat = (id: number) => {
         router.delete(chats.destroy(id).url, {
             preserveScroll: true,
@@ -28,45 +34,102 @@ export function ChatSidebarItem({
         });
     };
 
+    const submitRename = () => {
+        if (isEditing) {
+            updateChat(chat.id);
+        }
+        setIsEditing(!isEditing);
+        setTitle(newTitle);
+    };
+
+    const updateChat = (id: number) => {
+        router.put(
+            chats.update(id).url,
+            { title: newTitle },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setTitle(newTitle);
+                    router.reload({ only: ['sidebarChats'] });
+                },
+            },
+        );
+    };
+
     return (
         <SidebarMenuItem key={chat.id}>
             <SidebarMenuButton
                 className={cn(
                     'group/chat has-data-[state=open]:bg-sidebar-accent',
-                    isActive ? 'bg-neutral-100' : '',
+                    isActive ? 'bg-sidebar-accent' : '',
+                    isEditing ? 'bg-sidebar-accent' : '',
                 )}
             >
-                <Link
-                    href={chats.show(chat.id).url}
-                    prefetch
-                    className="flex-1 truncate"
-                >
-                    {chat.title}
-                </Link>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                {isEditing ? (
+                    <>
+                        <Input
+                            placeholder="Chat title"
+                            className="m-0 h-full w-full rounded-none border-0 bg-sidebar px-0 shadow-none focus:border-0 focus:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                            type="text"
+                            value={newTitle}
+                            onChange={(e) => setNewTitle(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    submitRename();
+                                }
+                            }}
+                        />
                         <SidebarMenuButton
                             size="lg"
                             className="group flex w-8 cursor-pointer items-center justify-center text-sidebar-accent-foreground"
                             data-test="sidebar-menu-button"
+                            onClick={() => submitRename()}
                         >
-                            <Ellipsis className="ml-auto size-4" />
+                            <Check className="ml-auto size-4" />
                         </SidebarMenuButton>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                        align="end"
-                        side="bottom"
-                    >
-                        <DropdownMenuItem
-                            className="cursor-pointer"
-                            onClick={() => deleteChat(chat.id)}
+                    </>
+                ) : (
+                    <>
+                        <Link
+                            href={chats.show(chat.id).url}
+                            prefetch
+                            className="flex-1 truncate"
                         >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                            {title}
+                        </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <SidebarMenuButton
+                                    size="lg"
+                                    className="group flex w-8 cursor-pointer items-center justify-center text-sidebar-accent-foreground"
+                                    data-test="sidebar-menu-button"
+                                >
+                                    <Ellipsis className="ml-auto size-4" />
+                                </SidebarMenuButton>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                                align="end"
+                                side="bottom"
+                            >
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() => setIsEditing(true)}
+                                >
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Rename
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() => deleteChat(chat.id)}
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </>
+                )}
             </SidebarMenuButton>
         </SidebarMenuItem>
     );

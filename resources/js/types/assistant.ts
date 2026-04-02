@@ -57,10 +57,10 @@ export type Message = {
     chat_id: number;
     role: MessageRole | string;
     content: string;
-    tokens: number | null;
+    tokens?: number | null;
     sequence: number;
-    model: ModelKey | null;
-    raw_json: unknown | null;
+    model?: ModelKey | null;
+    raw_json?: unknown | null;
     created_at: ISODateString;
     updated_at: ISODateString;
 };

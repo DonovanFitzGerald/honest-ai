@@ -30,7 +30,7 @@ const mainNavItems: NavItem[] = [
 type ChatNavItem = {
     id: number;
     title: string;
-    updated_at?: string;
+    updated_at: string;
     href: string;
 };
 
@@ -49,7 +49,10 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     const { props, url } = usePage<{ sidebarChats?: ChatNavItem[] }>();
-    const sidebarChats = props.sidebarChats ?? [];
+    const sidebarChats =
+        props.sidebarChats?.sort((a, b) =>
+            b.updated_at.localeCompare(a.updated_at),
+        ) ?? [];
 
     const currentChatId = (() => {
         const match = url.match(/^\/chats\/(\d+)(?:\/)?(?:\?.*)?$/);

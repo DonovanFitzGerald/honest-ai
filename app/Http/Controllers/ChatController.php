@@ -30,6 +30,15 @@ class ChatController extends Controller
         ]);
     }
 
+    public function update(Request $request, Chat $chat)
+    {
+        $chat->update([
+            'title' => $request->title,
+        ]);
+
+        return redirect()->route('chats.show', $chat)->setStatusCode(303);
+    }
+
     public function destroy(Chat $chat)
     {
         $chat->delete();

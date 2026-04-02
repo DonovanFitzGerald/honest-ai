@@ -1,3 +1,4 @@
+import { PanelRightOpen } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { route } from 'ziggy-js';
 import ChatMessage from '@/components/ui/chat-message';
@@ -9,7 +10,6 @@ import {
 import { UseLogDisplay } from '@/components/ui/use-log';
 import AppLayout from '@/layouts/app-layout';
 import type { Message, UseLog, Chat } from '@/types/assistant';
-import { PanelRightOpen } from 'lucide-react';
 
 export default function Show({
     chat,
@@ -34,15 +34,19 @@ export default function Show({
         (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)
             ?.content ?? '';
 
-    const scrollToBottom = () => {
+    const scrollToBottom = (behavior: ScrollBehavior = 'instant') => {
         const el = conversationDiv.current;
         if (!el) return;
-        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+        el.scrollTo({ top: el.scrollHeight, behavior });
     };
 
     useEffect(() => {
-        scrollToBottom();
+        scrollToBottom('smooth');
     }, [messages.length]);
+
+    useEffect(() => {
+        scrollToBottom('instant');
+    }, []);
 
     useEffect(() => {
         setMessages(initialMessages ?? []);
