@@ -13,6 +13,8 @@ import AppLayout from '@/layouts/app-layout';
 import { createHexGradientArray } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
+import type { AssistantRole } from '@/types/assistant';
+import type { DashboardProps, DayBucket, ChartSeries } from '@/types/dashboard';
 
 ChartJS.register(
     ArcElement,
@@ -27,23 +29,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: dashboard().url },
 ];
 
-type UseLogCaseRow = {
-    input_type: string[];
-    output_type: string[];
-    assistant_role: string | null;
-};
-
-type PromptRow = {
-    created_at: string | null;
-};
-
-type AssistantResponseRow = {
-    created_at: string | null;
-    tokens: number;
-    model: string;
-};
-
-function countValues(values: string[]) {
+function countValues(values: string[]): ChartSeries {
     const counts: Record<string, number> = {};
 
     for (const value of values) {
@@ -79,29 +65,19 @@ function makePieData(
     };
 }
 
-function formatDayLabel(date: Date) {
+function formatDayLabel(date: Date): string {
     return date.toLocaleDateString(undefined, {
         month: 'short',
         day: 'numeric',
     });
 }
 
-function getDayKey(date: Date) {
+function getDayKey(date: Date): string {
     const year = date.getFullYear();
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
     const day = `${date.getDate()}`.padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
-
-type DayBucket = {
-    key: string;
-    label: string;
-};
-
-type ChartSeries = {
-    labels: string[];
-    values: number[];
-};
 
 function buildLastNDaysBuckets(days: number): DayBucket[] {
     const today = new Date();
@@ -152,27 +128,6 @@ function aggregatePerDay<T>(
     };
 }
 
-function aggregatePromptsPerDay(prompts: PromptRow[], days = 14): ChartSeries {
-    return aggregatePerDay(
-        prompts,
-        (prompt) => prompt.created_at,
-        () => 1,
-        days,
-    );
-}
-
-function aggregateTokensPerDay(
-    responses: AssistantResponseRow[],
-    days = 14,
-): ChartSeries {
-    return aggregatePerDay(
-        responses,
-        (response) => response.created_at,
-        (response) => Number(response.tokens ?? 0),
-        days,
-    );
-}
-
 function makeBarData(
     label: string,
     labels: string[],
@@ -221,26 +176,32 @@ const barChartOptions = {
 const pieChartOptions = {};
 
 export default function Dashboard() {
-    const {
-        cases,
-        prompts,
-        assistantResponses,
-    }: {
-        cases: UseLogCaseRow[];
-        prompts: PromptRow[];
-        assistantResponses: AssistantResponseRow[];
-    } = usePage().props;
+    const { cases, prompts, assistantResponses } =
+        usePage<DashboardProps>().props;
 
     const inputCounts = countValues(cases.flatMap((c) => c.input_type ?? []));
     const outputCounts = countValues(cases.flatMap((c) => c.output_type ?? []));
     const roleCounts = countValues(
         cases
             .map((c) => c.assistant_role)
-            .filter((role): role is string => Boolean(role && role.trim())),
+            .filter((role): role is AssistantRole =>
+                Boolean(role && role.trim()),
+            ),
     );
 
-    const promptsPerDay = aggregatePromptsPerDay(prompts, 14);
-    const tokensPerDay = aggregateTokensPerDay(assistantResponses, 14);
+    const promptsPerDay = aggregatePerDay(
+        prompts,
+        (prompt) => prompt.created_at,
+        () => 1,
+        14,
+    );
+
+    const tokensPerDay = aggregatePerDay(
+        assistantResponses,
+        (response) => response.created_at,
+        (response) => Number(response.tokens ?? 0),
+        14,
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
