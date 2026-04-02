@@ -39,8 +39,12 @@ class ChatController extends Controller
         return redirect()->route('chats.show', $chat)->setStatusCode(303);
     }
 
-    public function destroy(Chat $chat)
+    public function destroy(Request $request, Chat $chat)
     {
+        if ($request->active_chat_id == $chat->id) {
+            return redirect()->route('dashboard')->setStatusCode(303);
+        }
         $chat->delete();
+
     }
 }

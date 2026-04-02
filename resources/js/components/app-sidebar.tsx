@@ -17,7 +17,7 @@ import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
 import { ChatNewButton } from './chat-new-button';
-import { ChatSidebarItem } from './chat-sidebar-item';
+import ChatSidebarItems from './chat-sidebar-items';
 
 const mainNavItems: NavItem[] = [
     {
@@ -48,16 +48,11 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { props, url } = usePage<{ sidebarChats?: ChatNavItem[] }>();
+    const { props } = usePage<{ sidebarChats?: ChatNavItem[] }>();
     const sidebarChats =
         props.sidebarChats?.sort((a, b) =>
             b.updated_at.localeCompare(a.updated_at),
         ) ?? [];
-
-    const currentChatId = (() => {
-        const match = url.match(/^\/chats\/(\d+)(?:\/)?(?:\?.*)?$/);
-        return match ? Number(match[1]) : null;
-    })();
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -81,16 +76,7 @@ export function AppSidebar() {
                     </SidebarMenu>
                 </SidebarGroup>
                 <SidebarMenu>
-                    {sidebarChats.map((c) => {
-                        const isActive = currentChatId === c.id;
-                        return (
-                            <ChatSidebarItem
-                                key={c.id}
-                                chat={c}
-                                isActive={isActive}
-                            />
-                        );
-                    })}
+                    <ChatSidebarItems sidebarChats={sidebarChats} />
                 </SidebarMenu>
             </SidebarContent>
 

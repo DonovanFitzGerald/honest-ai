@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import { Check, Ellipsis, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -17,9 +17,11 @@ import { Input } from './ui/input';
 export function ChatSidebarItem({
     chat,
     isActive,
+    deleteChat,
 }: {
     chat: Chat;
     isActive: boolean;
+    deleteChat: (id: number) => void;
 }) {
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(chat.title);
@@ -34,23 +36,6 @@ export function ChatSidebarItem({
         }
     }, [isEditing]);
 
-    const deleteChat = (id: number) => {
-        router.delete(chats.destroy(id).url, {
-            preserveScroll: true,
-            onSuccess: () => {
-                router.reload({ only: ['sidebarChats'] });
-            },
-        });
-    };
-
-    const submitRename = () => {
-        if (isEditing) {
-            updateChat(chat.id);
-        }
-        setIsEditing(!isEditing);
-        setTitle(newTitle);
-    };
-
     const updateChat = (id: number) => {
         router.put(
             chats.update(id).url,
@@ -63,6 +48,14 @@ export function ChatSidebarItem({
                 },
             },
         );
+    };
+
+    const submitRename = () => {
+        if (isEditing) {
+            updateChat(chat.id);
+        }
+        setIsEditing(!isEditing);
+        setTitle(newTitle);
     };
 
     return (
@@ -142,5 +135,41 @@ export function ChatSidebarItem({
                 )}
             </SidebarMenuButton>
         </SidebarMenuItem>
+    );
+}
+
+export default function ChatSidebarItems({
+    sidebarChats,
+}: {
+    sidebarChats: Chat[];
+}) {
+    const { url } = usePage();
+
+    const currentChatId = (() => {
+        const match = url.match(/^\/chats\/(\d+)(?:\/)?(?:\?.*)?$/);
+        return match ? Number(match[1]) : null;
+    })();
+
+    const deleteChat = (id: number) => {
+        router.delete(chats.destroy(id).url, {
+            data: { active_chat_id: currentChatId },
+            preserveScroll: true,
+            onSuccess: () => {
+                router.reload({ only: ['sidebarChats'] });
+            },
+        });
+    };
+
+    return (
+        <>
+            {sidebarChats.map((chat) => (
+                <ChatSidebarItem
+                    key={chat.id}
+                    chat={chat}
+                    isActive={chat.id === currentChatId}
+                    deleteChat={deleteChat}
+                />
+            ))}
+        </>
     );
 }
