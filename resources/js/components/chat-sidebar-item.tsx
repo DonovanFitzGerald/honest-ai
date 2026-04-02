@@ -69,7 +69,7 @@ export function ChatSidebarItem({
         <SidebarMenuItem key={chat.id}>
             <SidebarMenuButton
                 className={cn(
-                    'group/chat has-data-[state=open]:bg-sidebar-accent',
+                    'group/chat gap-0 has-data-[state=open]:bg-sidebar-accent',
                     isActive ? 'bg-sidebar-accent' : '',
                     isEditing ? 'bg-sidebar-accent' : '',
                 )}
@@ -111,10 +111,10 @@ export function ChatSidebarItem({
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton
                                     size="lg"
-                                    className="group flex w-8 cursor-pointer items-center justify-center text-sidebar-accent-foreground"
+                                    className="group w-0 cursor-pointer items-center justify-center text-sidebar-accent-foreground group-hover/chat:w-8 data-[state=open]:w-8"
                                     data-test="sidebar-menu-button"
                                 >
-                                    <Ellipsis className="ml-auto size-4" />
+                                    <Ellipsis className="hidden size-4 group-hover/chat:block in-data-[state=open]:block" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
