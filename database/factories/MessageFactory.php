@@ -17,15 +17,17 @@ class MessageFactory extends Factory
     public function definition(): array
     {
         $role = fake()->randomElement(['user', 'assistant']);
+        $content = $role === 'user'
+            ? fake()->sentence(fake()->numberBetween(4, 30))
+            : fake()->paragraphs(fake()->numberBetween(1, 30), true);
+        $tokens = $content ? str_word_count($content) * 5 : 0;
 
         return [
             'chat_id' => Chat::factory(),
             'role' => $role,
-            'content' => $role === 'user'
-                ? fake()->sentence(fake()->numberBetween(4, 12))
-                : fake()->paragraphs(fake()->numberBetween(1, 3), true),
+            'content' => $content,
             'sequence' => fake()->numberBetween(1, 1000),
-            'tokens' => fake()->numberBetween(1, 10000),
+            'tokens' => $tokens,
             'model' => $role === 'assistant'
                 ? fake()->randomElement(['gemini'])
                 : null,
@@ -34,18 +36,24 @@ class MessageFactory extends Factory
 
     public function user(): static
     {
+        $content = fake()->sentence(fake()->numberBetween(4, 30));
+        $tokens = $content ? str_word_count($content) * 5 : 0;
         return $this->state(fn() => [
             'role' => 'user',
-            'content' => fake()->sentence(fake()->numberBetween(4, 12)),
+            'content' => $content,
+            'tokens' => $tokens,
             'model' => null,
         ]);
     }
 
     public function assistant(): static
     {
+        $content = fake()->paragraphs(fake()->numberBetween(1, 30), true);
+        $tokens = $content ? str_word_count($content) * 5 : 0;
         return $this->state(fn() => [
             'role' => 'assistant',
-            'content' => fake()->paragraphs(fake()->numberBetween(1, 3), true),
+            'content' => $content,
+            'tokens' => $tokens,
             'model' => fake()->randomElement(['gemini']),
         ]);
     }

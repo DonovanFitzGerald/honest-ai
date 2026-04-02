@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Chat;
 use App\Models\Message;
 use Illuminate\Database\Seeder;
+use App\Support\AssistantModelRegistry;
 
 class MessageSeeder extends Seeder
 {
@@ -14,26 +15,38 @@ class MessageSeeder extends Seeder
     public function run(): void
     {
         $chats = Chat::all();
+        $assistantModels = app(AssistantModelRegistry::class)->options();
 
         foreach ($chats as $chat) {
-            $messageCount = fake()->numberBetween(4, 12);
+            $messageCount = fake()->numberBetween(4, 50);
+            $dateTime = fake()->dateTimeBetween('-30 days', 'now');
+            $model = fake()->randomElement($assistantModels);
 
             for ($i = 1; $i <= $messageCount; $i++) {
                 $isUser = $i % 2 !== 0;
-                $dateTime = fake()->dateTimeBetween('-30 days', 'now');
+                if ($isUser) {
+                    Message::factory()
+                        ->forChat($chat)
+                        ->sequenceNumber($i)
+                        ->user()
+                        ->state([
+                            'created_at' => $dateTime,
+                        ])
+                        ->create();
+                }
+                else {
+                    Message::factory()
+                        ->forChat($chat)
+                        ->sequenceNumber($i)
+                        ->assistant()
+                        ->state([
+                            'model' => $model?->value ?? null,
+                            'created_at' => $dateTime,
+                        ])
+                        ->create();
+                }
 
-                Message::factory()
-                    ->forChat($chat)
-                    ->sequenceNumber($i)
-                    ->state([
-                        'role' => $isUser ? 'user' : 'assistant',
-                        'content' => $isUser
-                            ? fake()->sentence(fake()->numberBetween(4, 12))
-                            : fake()->paragraphs(fake()->numberBetween(1, 2), true),
-                        'model' => $isUser ? null : 'gemini',
-                        'created_at' => $dateTime,
-                    ])
-                    ->create();
+                $dateTime->modify('+' . fake()->numberBetween(0, 20) . ' minutes');
             }
         }
     }
