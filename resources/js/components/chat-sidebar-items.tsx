@@ -138,11 +138,7 @@ export function ChatSidebarItem({
     );
 }
 
-export default function ChatSidebarItems({
-    sidebarChats,
-}: {
-    sidebarChats: Chat[];
-}) {
+export default function ChatSidebarItems({ items }: { items: Chat[] }) {
     const { url } = usePage();
 
     const currentChatId = (() => {
@@ -162,7 +158,7 @@ export default function ChatSidebarItems({
 
     return (
         <>
-            {sidebarChats.map((chat) => (
+            {items.map((chat) => (
                 <ChatSidebarItem
                     key={chat.id}
                     chat={chat}

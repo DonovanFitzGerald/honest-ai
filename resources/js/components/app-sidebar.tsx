@@ -70,7 +70,7 @@ export function AppSidebar() {
                     </SidebarMenu>
                 </SidebarGroup>
                 <SidebarMenu>
-                    <ChatSidebarItems sidebarChats={sidebarChats} />
+                    <ChatSidebarItems items={sidebarChats} />
                 </SidebarMenu>
             </SidebarContent>
 
