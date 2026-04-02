@@ -2,7 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import { Check, Ellipsis, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { SidebarMenuItem } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import chats from '@/routes/chats';
 import type { Chat } from '@/types/assistant';
@@ -60,9 +60,9 @@ export function ChatSidebarItem({
 
     return (
         <SidebarMenuItem key={chat.id}>
-            <SidebarMenuButton
+            <div
                 className={cn(
-                    'group/chat gap-0 has-data-[state=open]:bg-sidebar-accent',
+                    'peer/menu-button group/chat flex w-full items-center gap-0 overflow-hidden rounded-md px-2 py-1.5 text-sm has-data-[state=open]:bg-sidebar-accent',
                     isActive ? 'bg-sidebar-accent' : '',
                     isEditing ? 'bg-sidebar-accent' : '',
                 )}
@@ -82,14 +82,13 @@ export function ChatSidebarItem({
                                 }
                             }}
                         />
-                        <SidebarMenuButton
-                            size="lg"
-                            className="group flex w-8 cursor-pointer items-center justify-center text-sidebar-accent-foreground"
-                            data-test="sidebar-menu-button"
+                        <button
+                            className="flex w-8 shrink-0 cursor-pointer items-center justify-center text-sidebar-accent-foreground"
                             onClick={() => submitRename()}
+                            aria-label="Confirm rename"
                         >
                             <Check className="ml-auto size-4" />
-                        </SidebarMenuButton>
+                        </button>
                     </>
                 ) : (
                     <>
@@ -102,13 +101,12 @@ export function ChatSidebarItem({
                         </Link>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton
-                                    size="lg"
-                                    className="group w-0 cursor-pointer items-center justify-center text-sidebar-accent-foreground group-hover/chat:w-8 data-[state=open]:w-8"
-                                    data-test="sidebar-menu-button"
+                                <button
+                                    className="flex w-0 cursor-pointer items-center justify-center overflow-hidden text-sidebar-accent-foreground transition-[width] group-hover/chat:w-6 data-[state=open]:w-6"
+                                    aria-label="Chat options"
                                 >
                                     <Ellipsis className="hidden size-4 group-hover/chat:block in-data-[state=open]:block" />
-                                </SidebarMenuButton>
+                                </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
@@ -133,7 +131,7 @@ export function ChatSidebarItem({
                         </DropdownMenu>
                     </>
                 )}
-            </SidebarMenuButton>
+            </div>
         </SidebarMenuItem>
     );
 }
