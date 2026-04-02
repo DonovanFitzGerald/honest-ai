@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Chat;
 use App\Models\UseLog;
-use App\Models\UseLogCase;
 use App\Services\AssistantService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

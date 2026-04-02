@@ -1,3 +1,12 @@
 {
-    "preset": "laravel"
+    "preset": "laravel",
+    "rules": {
+        "single_blank_line_at_eof": false,
+        "not_operator_with_successor_space": false,
+        "function_declaration": false,
+        "array_indentation": false,
+        "concat_space": false,
+        "braces_position": false,
+        "control_structure_continuation_position": false
+    }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UseLogCase;
 use App\Models\Message;
+use App\Models\UseLogCase;
 use Inertia\Inertia;
 
 class DashboardController extends Controller

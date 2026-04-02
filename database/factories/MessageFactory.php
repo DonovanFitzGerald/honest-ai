@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Models\Chat;
 use App\Models\Message;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Nette\Utils\Json;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Message>
@@ -38,6 +37,7 @@ class MessageFactory extends Factory
     {
         $content = fake()->sentence(fake()->numberBetween(4, 30));
         $tokens = $content ? str_word_count($content) * 5 : 0;
+
         return $this->state(fn() => [
             'role' => 'user',
             'content' => $content,
@@ -50,6 +50,7 @@ class MessageFactory extends Factory
     {
         $content = fake()->paragraphs(fake()->numberBetween(1, 30), true);
         $tokens = $content ? str_word_count($content) * 5 : 0;
+
         return $this->state(fn() => [
             'role' => 'assistant',
             'content' => $content,

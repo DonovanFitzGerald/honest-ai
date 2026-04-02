@@ -3,9 +3,9 @@
 namespace Tests\Feature\Controllers;
 
 use App\Models\Chat;
-use App\Models\User;
 use App\Models\Message;
 use App\Models\UseLog;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;

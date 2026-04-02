@@ -24,5 +24,4 @@ class Message extends Model
     protected $casts = [
         'raw_json' => 'array',
     ];
-
 }

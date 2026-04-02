@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Chat;
 use App\Models\Message;
-use Illuminate\Database\Seeder;
 use App\Support\AssistantModelRegistry;
+use Illuminate\Database\Seeder;
 
 class MessageSeeder extends Seeder
 {

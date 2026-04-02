@@ -15,7 +15,7 @@ class UseLog extends Model
         'chat_id',
         'total_use_cases',
         'raw_output',
-        'chat_snapshot'
+        'chat_snapshot',
     ];
 
     public function use_cases(): HasMany

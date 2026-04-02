@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\UseLog;
 
 class Chat extends Model
 {
@@ -12,7 +11,7 @@ class Chat extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title'
+        'title',
     ];
 
     public function messages()

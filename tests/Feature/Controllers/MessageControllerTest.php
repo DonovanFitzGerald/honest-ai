@@ -3,7 +3,6 @@
 namespace Tests\Feature\Controllers;
 
 use App\Models\Chat;
-use App\Models\Message;
 use App\Models\User;
 use App\Services\AssistantService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,10 +24,10 @@ class MessageControllerTest extends TestCase
                     [
                         'content' => [
                             'parts' => [
-                                ['text' => 'Hello from Assistant']
-                            ]
-                        ]
-                    ]
+                                ['text' => 'Hello from Assistant'],
+                            ],
+                        ],
+                    ],
                 ],
                 'modelVersion' => 'gemini-mock',
             ]);
