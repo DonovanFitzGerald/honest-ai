@@ -1,5 +1,7 @@
+import { Send } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { route } from 'ziggy-js';
+import { Button } from '@/components/ui/button';
 import ChatMessage from '@/components/ui/chat-message';
 import { UseLogSidebar } from '@/components/use-log-sidebar';
 import AppLayout from '@/layouts/app-layout';
@@ -128,8 +130,9 @@ export default function Show({
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key !== 'Enter') return;
+        if (e.shiftKey) return;
         e.preventDefault();
         handleInputSubmit(inputText);
     };
@@ -152,15 +155,25 @@ export default function Show({
                                 Awaiting Response...
                             </p>
                         )}
-                        <input
-                            type="text"
-                            className="w-full rounded-3xl border px-6 py-3 shadow-lg"
-                            placeholder="Ask anything..."
-                            onChange={(e) => setInputText(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            value={inputText}
-                            disabled={sending}
-                        />
+                        <div className="flex h-full max-h-60 min-h-14 w-full flex-col items-center justify-center gap-2 overflow-y-auto rounded-3xl border border-border p-2 shadow-lg has-focus-within:outline-1 has-focus-within:outline-black">
+                            <textarea
+                                className="peer/input field-sizing-content w-full resize-none px-4 focus:outline-none"
+                                placeholder="Ask anything..."
+                                onChange={(e) => setInputText(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                value={inputText}
+                                disabled={sending}
+                            />
+                            <div className="flex w-full justify-end peer-placeholder-shown/input:hidden">
+                                <Button
+                                    className="flex aspect-square h-10 w-10 cursor-pointer justify-center rounded-full bg-primary text-primary-foreground"
+                                    onClick={() => handleInputSubmit(inputText)}
+                                    disabled={sending}
+                                >
+                                    <Send className="size-4" />
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <UseLogSidebar useLog={useLog} />
