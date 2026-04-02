@@ -1,15 +1,9 @@
-import { PanelRightOpen } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { route } from 'ziggy-js';
 import ChatMessage from '@/components/ui/chat-message';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import { UseLogDisplay } from '@/components/ui/use-log';
+import { UseLogSidebar } from '@/components/use-log-sidebar';
 import AppLayout from '@/layouts/app-layout';
-import type { Message, UseLog, Chat } from '@/types/assistant';
+import type { Chat, Message, UseLog } from '@/types/assistant';
 
 export default function Show({
     chat,
@@ -169,25 +163,7 @@ export default function Show({
                         />
                     </div>
                 </div>
-
-                <div className="overflow-auto">
-                    <Collapsible>
-                        {useLog && (
-                            <>
-                                <CollapsibleTrigger className="absolute top-4 right-8 flex items-center justify-center gap-1.5 rounded-sm p-1.5 text-sm hover:bg-accent">
-                                    <span className="flex aspect-square h-6 w-6 items-center justify-center rounded-full border border-accent bg-background">
-                                        {useLog.total_use_cases}
-                                    </span>
-                                    <span>Use Log</span>
-                                    <PanelRightOpen className="h-4 w-4" />
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <UseLogDisplay useLog={useLog} />
-                                </CollapsibleContent>
-                            </>
-                        )}
-                    </Collapsible>
-                </div>
+                <UseLogSidebar useLog={useLog} />
             </div>
         </AppLayout>
     );
