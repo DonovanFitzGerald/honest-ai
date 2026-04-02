@@ -141,6 +141,8 @@ function makeBarData(
                 label,
                 data: values,
                 backgroundColor,
+                borderRadius: 8,
+                borderSkipped: false,
             },
         ],
     };
@@ -156,6 +158,9 @@ const barChartOptions = {
     scales: {
         x: {
             grid: {
+                display: false,
+            },
+            border: {
                 display: false,
             },
         },
