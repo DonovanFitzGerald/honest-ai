@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Support\AssistantModelRegistry;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -35,6 +36,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $models = app(AssistantModelRegistry::class);
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -54,6 +56,10 @@ class HandleInertiaRequests extends Middleware
                         'href' => route('chats.show', ['chat' => $c]),
                     ])
                 : [],
+            'assistantModels' => [
+                'default' => $models->default(),
+                'options' => $models->options(),
+            ],
         ];
     }
 }
