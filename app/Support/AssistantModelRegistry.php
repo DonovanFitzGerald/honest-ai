@@ -11,7 +11,40 @@ class AssistantModelRegistry
 
     public function active(): array
     {
-        return array_filter($this->all(), fn(array $model) => $model['active'] ?? false);
+        return array_filter(
+            $this->all(),
+            fn(array $model) => (bool) ($model['active'] ?? false),
+        );
+    }
+
+    public function all_models(): array
+    {
+        return collect($this->all())
+            ->mapWithKeys(fn(array $model, string $key) => [
+                $key => [
+                    'label' => $model['label'],
+                    'provider' => $model['provider'],
+                    'active' => (bool) ($model['active'] ?? false),
+                    'capabilities' => [
+                        'tools' => (bool) data_get($model, 'capabilities.tools', false),
+                        'vision' => (bool) data_get($model, 'capabilities.vision', false),
+                        'json_mode' => (bool) data_get($model, 'capabilities.json_mode', false),
+                    ],
+                    'limits' => [
+                        'context_window' => data_get($model, 'limits.context_window'),
+                        'max_output_tokens' => data_get($model, 'limits.max_output_tokens'),
+                    ],
+                    'pricing' => [
+                        'input_per_1m' => data_get($model, 'pricing.input_per_1m'),
+                        'output_per_1m' => data_get($model, 'pricing.output_per_1m'),
+                    ],
+                    'ui' => [
+                        'badge' => data_get($model, 'ui.badge'),
+                        'description' => data_get($model, 'ui.description'),
+                    ],
+                ],
+            ])
+            ->all();
     }
 
     public function options(): array
@@ -21,9 +54,11 @@ class AssistantModelRegistry
                 'value' => $key,
                 'label' => $model['label'],
                 'provider' => $model['provider'],
-                'badge' => $model['badge'] ?? null,
-                'supports_tools' => $model['supports_tools'] ?? false,
-                'supports_vision' => $model['supports_vision'] ?? false,
+                'badge' => data_get($model, 'ui.badge'),
+                'description' => data_get($model, 'ui.description'),
+                'supports_tools' => (bool) data_get($model, 'capabilities.tools', false),
+                'supports_vision' => (bool) data_get($model, 'capabilities.vision', false),
+                'supports_json_mode' => (bool) data_get($model, 'capabilities.json_mode', false),
             ])
             ->values()
             ->all();
@@ -31,11 +66,16 @@ class AssistantModelRegistry
 
     public function find(string $key): ?array
     {
-        return $this->all()[$key] ?? null;
+        return $this->all_models()[$key] ?? null;
     }
 
     public function default(): string
     {
         return config('assistantmodels.default');
+    }
+
+    public function defaultModel(): ?array
+    {
+        return $this->find($this->default());
     }
 }
