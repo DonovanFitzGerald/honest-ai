@@ -20,6 +20,7 @@ class MessageSeeder extends Seeder
 
             for ($i = 1; $i <= $messageCount; $i++) {
                 $isUser = $i % 2 !== 0;
+                $dateTime = fake()->dateTimeBetween('-30 days', 'now');
 
                 Message::factory()
                     ->forChat($chat)
@@ -30,6 +31,7 @@ class MessageSeeder extends Seeder
                             ? fake()->sentence(fake()->numberBetween(4, 12))
                             : fake()->paragraphs(fake()->numberBetween(1, 2), true),
                         'model' => $isUser ? null : 'gemini',
+                        'created_at' => $dateTime,
                     ])
                     ->create();
             }

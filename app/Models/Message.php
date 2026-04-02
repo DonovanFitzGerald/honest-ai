@@ -18,6 +18,7 @@ class Message extends Model
         'tokens',
         'sequence',
         'model',
+        'created_at',
     ];
 
     protected $casts = [
