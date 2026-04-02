@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import { Check, Ellipsis, Pencil, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import chats from '@/routes/chats';
@@ -24,6 +24,15 @@ export function ChatSidebarItem({
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(chat.title);
     const [newTitle, setNewTitle] = useState(chat.title);
+
+    const refInput = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (isEditing) {
+            refInput.current?.focus();
+            refInput.current?.select();
+        }
+    }, [isEditing]);
 
     const deleteChat = (id: number) => {
         router.delete(chats.destroy(id).url, {
@@ -68,8 +77,9 @@ export function ChatSidebarItem({
                 {isEditing ? (
                     <>
                         <Input
+                            ref={refInput}
                             placeholder="Chat title"
-                            className="m-0 h-full w-full rounded-none border-0 bg-sidebar px-0 shadow-none focus:border-0 focus:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                            className="m-0 h-full w-full rounded-none border-0 px-0 shadow-none focus:border-0 focus:shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                             type="text"
                             value={newTitle}
                             onChange={(e) => setNewTitle(e.target.value)}
