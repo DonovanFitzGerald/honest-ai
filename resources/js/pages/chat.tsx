@@ -14,7 +14,7 @@ export default function Show({
 }: {
     chat: Chat;
     messages: Message[];
-    useLog: UseLog;
+    useLog: UseLog | null;
 }) {
     const breadcrumbs = [
         { title: chat.title ?? `Chat #${chat.id}`, href: `/chats/${chat.id}` },
@@ -23,7 +23,17 @@ export default function Show({
     const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
     const [sending, setSending] = useState(false);
     const [inputText, setInputText] = useState('');
-    const [useLog, setUseLog] = useState<UseLog>(initialUseLog);
+    const [useLog, setUseLog] = useState<UseLog | null>(
+        initialUseLog?.total_use_cases ? initialUseLog : null,
+    );
+
+    useEffect(() => {
+        setUseLog(initialUseLog?.total_use_cases ? initialUseLog : null);
+        setMessages(initialMessages ?? []);
+        setInputText('');
+        setSending(false);
+    }, [chat.id, initialMessages, initialUseLog]);
+
     const conversationDiv = useRef<HTMLDivElement | null>(null);
 
     const csrf =
@@ -43,12 +53,6 @@ export default function Show({
     useEffect(() => {
         scrollToBottom('instant');
     }, []);
-
-    useEffect(() => {
-        setMessages(initialMessages ?? []);
-        setInputText('');
-        setSending(false);
-    }, [chat.id, initialMessages]);
 
     const requestUseLog = async () => {
         try {
@@ -176,7 +180,7 @@ export default function Show({
                         </div>
                     </div>
                 </div>
-                <UseLogSidebar useLog={useLog} />
+                {useLog && <UseLogSidebar useLog={useLog} />}
             </div>
         </AppLayout>
     );
