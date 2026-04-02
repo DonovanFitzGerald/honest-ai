@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
+import type { Chat } from '@/types/assistant';
 import AppLogo from './app-logo';
 import { ChatNewButton } from './chat-new-button';
 import ChatSidebarItems from './chat-sidebar-items';
@@ -26,13 +27,6 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
 ];
-
-type ChatNavItem = {
-    id: number;
-    title: string;
-    updated_at: string;
-    href: string;
-};
 
 const footerNavItems: NavItem[] = [
     {
@@ -48,7 +42,7 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { props } = usePage<{ sidebarChats?: ChatNavItem[] }>();
+    const { props } = usePage<{ sidebarChats?: Chat[] }>();
     const sidebarChats =
         props.sidebarChats?.sort((a, b) =>
             b.updated_at.localeCompare(a.updated_at),

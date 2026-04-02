@@ -48,8 +48,8 @@ export type Confidence = 'High' | 'Medium' | 'Low';
 export type Chat = {
     id: number;
     title: string;
-    created_at?: ISODateString;
-    updated_at?: ISODateString;
+    created_at: ISODateString;
+    updated_at: ISODateString;
 };
 
 export type Message = {
