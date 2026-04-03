@@ -1,10 +1,13 @@
 import type { ChartOptions } from 'chart.js';
-import { Zap } from 'lucide-react';
+import { ArrowDown, ArrowUp, Zap } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import type { ChartSeries } from '@/types/dashboard';
+import type { WindowStats } from './chart-utils';
 
 const tokensPerWattHour = 5000;
 const toKwh = (tokens: number) => tokens / tokensPerWattHour / 1000;
+const fmtKwh = (kwh: number) =>
+    kwh >= 1 ? `${kwh.toFixed(2)} kWh` : `${(kwh * 1000).toFixed(2)} Wh`;
 
 const options: ChartOptions<'line'> = {
     responsive: true,
@@ -27,12 +30,50 @@ const options: ChartOptions<'line'> = {
     },
 };
 
+function EnergyStatRow({
+    period,
+    actual,
+    expected,
+}: {
+    period: string;
+    actual: number;
+    expected: number;
+}) {
+    const delta = actual - expected;
+    const isUp = delta >= 0;
+    const deltaPercent = expected > 0 ? (delta / expected) * 100 : 0;
+    const sign = isUp ? '+' : '';
+
+    return (
+        <div className="flex flex-col items-center justify-center">
+            <span className="text-neutral-400">{period}</span>
+            <span className="text-lg font-medium">{fmtKwh(actual)}</span>
+            <div className="flex items-center gap-1">
+                <span className="text-sm">
+                    {sign}
+                    {Math.round(Math.abs(deltaPercent))}%
+                </span>
+                {isUp ? (
+                    <ArrowUp className="h-4 w-4 text-red-500" />
+                ) : (
+                    <ArrowDown className="h-4 w-4 text-green-500" />
+                )}
+            </div>
+            <span className="text-sm text-neutral-400">
+                avg {fmtKwh(expected)}
+            </span>
+        </div>
+    );
+}
+
 interface EnergyUsageCardProps {
     tokensPerDay: ChartSeries;
+    stats?: WindowStats;
 }
 
 export default function EnergyUsageCard({
     tokensPerDay,
+    stats,
 }: EnergyUsageCardProps) {
     const dailyKwh = tokensPerDay.values.map(toKwh);
 
@@ -75,9 +116,7 @@ export default function EnergyUsageCard({
             <div className="mb-3 flex items-start justify-start gap-2 text-lg font-medium">
                 <div className="mt-3 flex flex-col items-start justify-center">
                     <div className="flex items-center gap-2">
-                        <p className="text-2xl font-bold">
-                            {totalKwh.toFixed(4)} kWh
-                        </p>
+                        <p className="text-2xl font-bold">{fmtKwh(totalKwh)}</p>
                         <Zap className="h-5 w-5" />
                     </div>
                     <p className="text-sm text-neutral-400">
@@ -86,6 +125,32 @@ export default function EnergyUsageCard({
                 </div>
             </div>
             <Line data={data} options={options} />
+            {stats && (
+                <div className="flex justify-evenly pt-3">
+                    <EnergyStatRow
+                        period="24h"
+                        actual={toKwh(stats.last24h)}
+                        expected={toKwh(
+                            stats.dailyAvg * Math.min(1, stats.daysSinceFirst),
+                        )}
+                    />
+                    <EnergyStatRow
+                        period="7d"
+                        actual={toKwh(stats.last7d)}
+                        expected={toKwh(
+                            stats.dailyAvg * Math.min(7, stats.daysSinceFirst),
+                        )}
+                    />
+                    <EnergyStatRow
+                        period="365d"
+                        actual={toKwh(stats.last365d)}
+                        expected={toKwh(
+                            stats.dailyAvg *
+                                Math.min(365, stats.daysSinceFirst),
+                        )}
+                    />
+                </div>
+            )}
         </div>
     );
 }

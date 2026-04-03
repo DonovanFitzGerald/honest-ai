@@ -126,7 +126,7 @@ export default function Dashboard() {
                     colorFrom="#F3E8FF"
                     colorTo="#7C3AED"
                 />
-                <EnergyUsageCard tokensPerDay={tokensPerDay} />
+                <EnergyUsageCard tokensPerDay={tokensPerDay} stats={tokenStats} />
             </div>
         </AppLayout>
     );
