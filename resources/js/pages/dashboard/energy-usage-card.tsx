@@ -11,6 +11,10 @@ const fmtKwh = (kwh: number) =>
 
 const options: ChartOptions<'line'> = {
     responsive: true,
+    interaction: {
+        intersect: false,
+        mode: 'index' as const,
+    },
     plugins: {
         legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } },
         tooltip: {

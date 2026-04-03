@@ -1,5 +1,5 @@
-import type { ChartSeries, DayBucket } from '@/types/dashboard';
 import type { ChartOptions } from 'chart.js';
+import type { ChartSeries, DayBucket } from '@/types/dashboard';
 
 export function sumSeries(series: ChartSeries): number {
     return series.values.reduce((a, b) => a + b, 0);
@@ -21,7 +21,10 @@ export function computeWindowStats<T>(
 ): WindowStats {
     const now = Date.now();
     let first: number | null = null;
-    let allTime = 0, last24h = 0, last7d = 0, last365d = 0;
+    let allTime = 0,
+        last24h = 0,
+        last7d = 0,
+        last365d = 0;
 
     for (const row of rows) {
         const raw = getCreatedAt(row);
@@ -34,13 +37,20 @@ export function computeWindowStats<T>(
 
         allTime += v;
         if (first === null || ts < first) first = ts;
-        if (age <= 86_400_000)          last24h  += v;
-        if (age <= 7 * 86_400_000)      last7d   += v;
-        if (age <= 365 * 86_400_000)    last365d += v;
+        if (age <= 86_400_000) last24h += v;
+        if (age <= 7 * 86_400_000) last7d += v;
+        if (age <= 365 * 86_400_000) last365d += v;
     }
 
     const days = first !== null ? Math.max((now - first) / 86_400_000, 1) : 1;
-    return { last24h, last7d, last365d, dailyAvg: allTime / days, allTime, daysSinceFirst: days };
+    return {
+        last24h,
+        last7d,
+        last365d,
+        dailyAvg: allTime / days,
+        allTime,
+        daysSinceFirst: days,
+    };
 }
 
 export function countValues(values: string[]): ChartSeries {
@@ -185,6 +195,9 @@ export function makeBarData(
 
 export const barChartOptions = {
     responsive: true,
+    interaction: {
+        intersect: false,
+    },
     plugins: { legend: { display: false } },
     scales: {
         x: { grid: { display: false }, border: { display: false } },
