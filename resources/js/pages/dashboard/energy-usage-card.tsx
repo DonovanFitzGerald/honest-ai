@@ -72,17 +72,20 @@ export default function EnergyUsageCard({
 
     return (
         <div className="rounded-xl border border-sidebar-accent p-6">
-            <div className="mb-3 flex items-center justify-center gap-2 text-lg font-medium text-neutral-600">
-                <h2>Energy Usage</h2>
-                <Zap className="h-5 w-5" />
+            <div className="mb-3 flex items-start justify-start gap-2 text-lg font-medium">
+                <div className="mt-3 flex flex-col items-start justify-center">
+                    <div className="flex items-center gap-2">
+                        <p className="text-2xl font-bold">
+                            {totalKwh.toFixed(4)} kWh
+                        </p>
+                        <Zap className="h-5 w-5" />
+                    </div>
+                    <p className="text-sm text-neutral-400">
+                        cumulative over period
+                    </p>
+                </div>
             </div>
             <Line data={data} options={options} />
-            <div className="mt-3 flex flex-col items-center justify-center">
-                <p className="text-2xl font-bold">{totalKwh.toFixed(4)} kWh</p>
-                <p className="text-sm text-neutral-400">
-                    cumulative over period
-                </p>
-            </div>
         </div>
     );
 }

@@ -1,6 +1,10 @@
 import type { ChartSeries, DayBucket } from '@/types/dashboard';
 import type { ChartOptions } from 'chart.js';
 
+export function sumSeries(series: ChartSeries): number {
+    return series.values.reduce((a, b) => a + b, 0);
+}
+
 export function countValues(values: string[]): ChartSeries {
     const counts: Record<string, number> = {};
 
