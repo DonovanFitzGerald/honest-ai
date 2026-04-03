@@ -5,6 +5,44 @@ export function sumSeries(series: ChartSeries): number {
     return series.values.reduce((a, b) => a + b, 0);
 }
 
+export type WindowStats = {
+    last24h: number;
+    last7d: number;
+    last365d: number;
+    dailyAvg: number;
+    allTime: number;
+    daysSinceFirst: number;
+};
+
+export function computeWindowStats<T>(
+    rows: T[],
+    getCreatedAt: (row: T) => string | null,
+    getValue: (row: T) => number,
+): WindowStats {
+    const now = Date.now();
+    let first: number | null = null;
+    let allTime = 0, last24h = 0, last7d = 0, last365d = 0;
+
+    for (const row of rows) {
+        const raw = getCreatedAt(row);
+        if (!raw) continue;
+        const ts = new Date(raw).getTime();
+        if (Number.isNaN(ts)) continue;
+
+        const v = getValue(row);
+        const age = now - ts;
+
+        allTime += v;
+        if (first === null || ts < first) first = ts;
+        if (age <= 86_400_000)          last24h  += v;
+        if (age <= 7 * 86_400_000)      last7d   += v;
+        if (age <= 365 * 86_400_000)    last365d += v;
+    }
+
+    const days = first !== null ? Math.max((now - first) / 86_400_000, 1) : 1;
+    return { last24h, last7d, last365d, dailyAvg: allTime / days, allTime, daysSinceFirst: days };
+}
+
 export function countValues(values: string[]): ChartSeries {
     const counts: Record<string, number> = {};
 

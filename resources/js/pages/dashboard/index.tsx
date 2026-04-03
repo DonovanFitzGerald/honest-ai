@@ -22,7 +22,7 @@ import type {
     DashboardProps,
 } from '@/types/dashboard';
 import BarChartCard from './bar-chart-card';
-import { aggregatePerDay, countValues } from './chart-utils';
+import { aggregatePerDay, countValues, computeWindowStats } from './chart-utils';
 import EnergyUsageCard from './energy-usage-card';
 import PieChartCard from './pie-chart-card';
 
@@ -71,6 +71,18 @@ export default function Dashboard() {
         14,
     );
 
+    const promptStats = computeWindowStats(
+        prompts,
+        (p: DashboardPromptRow) => p.created_at,
+        () => 1,
+    );
+
+    const tokenStats = computeWindowStats(
+        assistantResponses,
+        (r: DashboardAssistantResponseRow) => r.created_at,
+        (r: DashboardAssistantResponseRow) => Number(r.tokens ?? 0),
+    );
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
@@ -101,16 +113,16 @@ export default function Dashboard() {
 
             <div className="grid gap-4 px-4 pb-4 md:grid-cols-3">
                 <BarChartCard
-                    title="Prompts per day (14 days)"
                     label="Prompts"
                     series={promptsPerDay}
+                    stats={promptStats}
                     colorFrom="#EAF4FF"
                     colorTo="#2563EB"
                 />
                 <BarChartCard
-                    title="Tokens per day (14 days)"
                     label="Tokens"
                     series={tokensPerDay}
+                    stats={tokenStats}
                     colorFrom="#F3E8FF"
                     colorTo="#7C3AED"
                 />
