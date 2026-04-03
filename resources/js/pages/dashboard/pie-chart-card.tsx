@@ -40,7 +40,7 @@ export default function PieChartCard({
                         series.labels[0].slice(1)}
                 </h2>
                 <div className="text-md flex items-center justify-center gap-1 text-neutral-400">
-                    <p>most common</p> <p>- {series.values[0]}</p>
+                    <p>most common - {series.values[0]}</p>
                 </div>
             </div>
         </div>

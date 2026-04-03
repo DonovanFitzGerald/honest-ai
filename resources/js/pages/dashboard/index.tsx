@@ -7,6 +7,9 @@ import {
     BarElement,
     CategoryScale,
     LinearScale,
+    LineElement,
+    PointElement,
+    Filler,
 } from 'chart.js';
 import { User, MessageCircleQuestion, MessageCircleReply } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
@@ -30,6 +33,9 @@ ChartJS.register(
     BarElement,
     CategoryScale,
     LinearScale,
+    LineElement,
+    PointElement,
+    Filler,
 );
 
 const breadcrumbs: BreadcrumbItem[] = [
