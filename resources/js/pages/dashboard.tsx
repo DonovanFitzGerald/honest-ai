@@ -15,6 +15,7 @@ import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 import type { AssistantRole } from '@/types/assistant';
 import type { DashboardProps, DayBucket, ChartSeries } from '@/types/dashboard';
+import { Zap } from 'lucide-react';
 
 ChartJS.register(
     ArcElement,
@@ -182,6 +183,8 @@ const barChartOptions = {
 
 const pieChartOptions = {};
 
+const tokensPerWattHour = 5000;
+
 export default function Dashboard() {
     const { cases, prompts, assistantResponses } =
         usePage<DashboardProps>().props;
@@ -266,7 +269,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            <div className="grid gap-4 px-4 pb-4 md:grid-cols-2">
+            <div className="grid gap-4 px-4 pb-4 md:grid-cols-3">
                 <div className="rounded-xl border p-4">
                     <h2 className="mb-3 text-sm font-medium">
                         Prompts per day (14 days)
@@ -303,6 +306,20 @@ export default function Dashboard() {
                         )}
                         options={barChartOptions}
                     />
+                </div>
+
+                <div className="flex flex-col items-center justify-center rounded-xl border p-4">
+                    <div className="flex aspect-square h-full flex-col items-center justify-center gap-2 rounded-full border-4 border-[#F25858]">
+                        <p>Energy Usage</p>
+                        <p className="text-xl font-bold">
+                            {(
+                                tokensPerDay.values.reduce((a, b) => a + b, 0) /
+                                tokensPerWattHour
+                            ).toFixed(2)}{' '}
+                            kWh
+                        </p>
+                        <Zap className="h-8 w-8 text-muted-foreground" />
+                    </div>
                 </div>
             </div>
         </AppLayout>
