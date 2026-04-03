@@ -144,16 +144,21 @@ export default function Show({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <div key={chat.id} className="flex h-[90vh] flex-row">
-                <div className="flex w-full flex-col">
-                    <div className="flex-1 overflow-auto" ref={conversationDiv}>
-                        <div className="mx-auto flex max-w-3xl flex-col gap-4 p-4">
-                            {messages.map((m) => (
-                                <ChatMessage key={m.id} message={m} />
-                            ))}
+                <div className="flex w-full flex-col justify-center">
+                    {messages.length > 0 && (
+                        <div
+                            className="flex-1 overflow-auto"
+                            ref={conversationDiv}
+                        >
+                            <div className="mx-auto flex max-w-200 flex-col gap-4 p-4">
+                                {messages.map((m) => (
+                                    <ChatMessage key={m.id} message={m} />
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-2 px-6 py-8">
+                    <div className="mx-auto flex w-full max-w-200 flex-col items-center justify-center gap-2 px-6 py-8">
                         {sending && (
                             <p className="animate-bounce text-neutral-400">
                                 Awaiting Response...

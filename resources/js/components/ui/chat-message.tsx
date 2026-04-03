@@ -1,62 +1,59 @@
-import * as React from 'react';
+import { ClipboardTrigger } from '@/components/ui/clipboard';
+import MarkdownText from '@/components/ui/markdown-text';
 import { cn } from '@/lib/utils';
-import MarkdownText from './markdown-text';
+import type { Message } from '@/types/assistant';
 
-type Message = {
-    id: number;
-    chat_id: number;
-    role: 'user' | 'assistant' | string;
-    content: string;
-    sequence: number;
-    model?: string | null;
-    created_at?: string;
-    updated_at?: string;
-};
-
-type ChatMessageProps = React.HTMLAttributes<HTMLDivElement> & {
-    message: Message;
-};
-
-export default function ChatMessage({
-    message,
-    className,
-    ...props
-}: ChatMessageProps) {
+export default function ChatMessage({ message }: { message: Message }) {
     const isUser = message.role === 'user';
     const isAssistant = message.role === 'assistant';
 
     return (
         <div
-            data-slot="message-row"
+            data-slot="message-row "
             className={cn(
-                'flex w-full',
-                isUser ? 'justify-end' : 'justify-start',
+                'group/message flex w-full flex-col px-6 py-3',
+                isUser ? 'items-end' : 'items-start',
             )}
         >
             <div
-                data-slot="message"
-                {...props}
                 className={cn(
-                    'w-full rounded-3xl px-6 py-3',
-                    isUser && 'max-w-[70%] bg-neutral-100 text-black',
+                    'w-full rounded-3xl',
+                    isUser && 'max-w-[70%] bg-neutral-100 px-6 py-3 text-black',
                     !isUser && !isAssistant && 'bg-neutral-200 text-black',
-                    className,
                 )}
+                data-slot="message "
             >
                 <div className="w-full">
-                    {isUser ? (
-                        <p className="">{message.content}</p>
-                    ) : (
-                        <MarkdownText content={message.content} />
-                    )}
+                    <div
+                        className="flex items-start gap-2"
+                        data-slot="message-content"
+                    >
+                        <div className="min-w-0 flex-1">
+                            {isAssistant ? (
+                                <MarkdownText content={message.content} />
+                            ) : (
+                                <p className="whitespace-pre-wrap">
+                                    {message.content}
+                                </p>
+                            )}
+                        </div>
+                    </div>
                 </div>
-
-                <div className="mt-2 text-[11px] opacity-70">
-                    {message.created_at
-                        ? new Date(message.created_at).toLocaleString()
-                        : ''}
-                    {message.model ? ` • ${message.model}` : ''}
-                </div>
+            </div>
+            <div
+                className={cn(
+                    'mt-2 flex flex-col items-start gap-2 text-[11px] opacity-70',
+                    isUser ? 'items-end' : 'items-start',
+                )}
+            >
+                {message.created_at
+                    ? new Date(message.created_at).toLocaleString()
+                    : ''}
+                {message.model ? ` • ${message.model}` : ''}
+                <ClipboardTrigger
+                    value={message.content}
+                    className="opacity-0 transition-opacity ease-in-out group-hover/message:opacity-50 hover:opacity-100"
+                />
             </div>
         </div>
     );
