@@ -44,7 +44,11 @@ export default function ChatMessage({
                 )}
             >
                 <div className="w-full">
-                    <MarkdownText content={message.content} />
+                    {isUser ? (
+                        <p className="">{message.content}</p>
+                    ) : (
+                        <MarkdownText content={message.content} />
+                    )}
                 </div>
 
                 <div className="mt-2 text-[11px] opacity-70">
