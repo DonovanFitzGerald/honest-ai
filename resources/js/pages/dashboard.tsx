@@ -8,6 +8,7 @@ import {
     CategoryScale,
     LinearScale,
 } from 'chart.js';
+import { Zap } from 'lucide-react';
 import { Pie, Bar } from 'react-chartjs-2';
 import AppLayout from '@/layouts/app-layout';
 import { createHexGradientArray } from '@/lib/utils';
@@ -15,7 +16,6 @@ import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 import type { AssistantRole } from '@/types/assistant';
 import type { DashboardProps, DayBucket, ChartSeries } from '@/types/dashboard';
-import { Zap } from 'lucide-react';
 
 ChartJS.register(
     ArcElement,
@@ -314,8 +314,9 @@ export default function Dashboard() {
                         <p className="text-xl font-bold">
                             {(
                                 tokensPerDay.values.reduce((a, b) => a + b, 0) /
-                                tokensPerWattHour
-                            ).toFixed(2)}{' '}
+                                tokensPerWattHour /
+                                1000
+                            ).toFixed(2)}
                             kWh
                         </p>
                         <Zap className="h-8 w-8 text-muted-foreground" />

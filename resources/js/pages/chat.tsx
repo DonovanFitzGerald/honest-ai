@@ -1,8 +1,8 @@
 import { Send } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { route } from 'ziggy-js';
+import ChatMessage from '@/components/chat-message';
 import { Button } from '@/components/ui/button';
-import ChatMessage from '@/components/ui/chat-message';
 import { UseLogSidebar } from '@/components/use-log-sidebar';
 import AppLayout from '@/layouts/app-layout';
 import type { Chat, Message, UseLog } from '@/types/assistant';
