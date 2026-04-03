@@ -26,6 +26,7 @@ const options: ChartOptions<'line'> = {
             ticks: { display: false },
             grid: { display: false },
             border: { display: false },
+            beginAtZero: true,
         },
     },
 };
