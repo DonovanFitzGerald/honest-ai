@@ -1,5 +1,10 @@
-import { FileText, PanelRightOpen } from 'lucide-react';
-import type { UseLog } from '@/types/assistant';
+import { PanelRightOpen } from 'lucide-react';
+import type { Chat, Message, UseLog } from '@/types/assistant';
+import {
+    CompleteChatDownloadButton,
+    UserPromptsDownloadButton,
+    UseLogDownloadButton,
+} from './ui/chat-download-buttons';
 import {
     Collapsible,
     CollapsibleContent,
@@ -7,7 +12,15 @@ import {
 } from './ui/collapsible';
 import { UseLogDisplay } from './ui/use-log';
 
-export function UseLogSidebar({ useLog }: { useLog: UseLog }) {
+export function UseLogSidebar({
+    useLog,
+    chat,
+    messages,
+}: {
+    useLog: UseLog;
+    chat: Chat;
+    messages: Message[];
+}) {
     return (
         <div className="overflow-auto">
             <Collapsible>
@@ -26,18 +39,18 @@ export function UseLogSidebar({ useLog }: { useLog: UseLog }) {
                                 Downloads
                             </h2>
                             <div className="flex justify-between py-2">
-                                <div className="flex cursor-pointer items-center justify-center gap-2 rounded-sm p-2 hover:bg-accent">
-                                    <p>AI Use Log</p>
-                                    <FileText className="h-4 w-4" />
-                                </div>
-                                <div className="flex cursor-pointer items-center justify-center gap-2 rounded-sm p-2 hover:bg-accent">
-                                    <p>Complete Chat</p>
-                                    <FileText className="h-4 w-4" />
-                                </div>
-                                <div className="flex cursor-pointer items-center justify-center gap-2 rounded-sm p-2 hover:bg-accent">
-                                    <p>User Prompts</p>
-                                    <FileText className="h-4 w-4" />
-                                </div>
+                                <UseLogDownloadButton
+                                    useLog={useLog}
+                                    chat={chat}
+                                />
+                                <CompleteChatDownloadButton
+                                    chat={chat}
+                                    messages={messages}
+                                />
+                                <UserPromptsDownloadButton
+                                    messages={messages}
+                                    chat={chat}
+                                />
                             </div>
                         </div>
                     </div>

@@ -6,6 +6,7 @@ import ChatMessage from '@/components/ui/chat-message';
 import { UseLogSidebar } from '@/components/use-log-sidebar';
 import AppLayout from '@/layouts/app-layout';
 import type { Chat, Message, UseLog } from '@/types/assistant';
+import messages from '../routes/chats/messages/index';
 
 export default function Show({
     chat,
@@ -185,7 +186,13 @@ export default function Show({
                         </div>
                     </div>
                 </div>
-                {useLog && <UseLogSidebar useLog={useLog} />}
+                {useLog && (
+                    <UseLogSidebar
+                        useLog={useLog}
+                        chat={chat}
+                        messages={messages}
+                    />
+                )}
             </div>
         </AppLayout>
     );
