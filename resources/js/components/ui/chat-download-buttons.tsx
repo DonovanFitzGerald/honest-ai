@@ -131,18 +131,13 @@ export function UseLogDownloadButton({
     chat: Chat;
 }) {
     return (
-        <button
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-sm p-2 hover:bg-accent"
-            onMouseDown={() =>
-                downloadMarkdown(
-                    `chat-${chat.id}-use-log.md`,
-                    formatUseLogMarkdown(useLog, chat),
-                )
-            }
+        <DownloadButton
+            filename={`chat-${chat.id}-use-log.md`}
+            content={formatUseLogMarkdown(useLog, chat)}
         >
             <p>Use Log</p>
             <FileText className="h-4 w-4" />
-        </button>
+        </DownloadButton>
     );
 }
 
@@ -154,18 +149,13 @@ export function UserPromptsDownloadButton({
     chat: Chat;
 }) {
     return (
-        <button
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-sm p-2 hover:bg-accent"
-            onMouseDown={() =>
-                downloadMarkdown(
-                    `chat-${chat.id}-user-prompts.md`,
-                    formatUserPromptsMarkdown(messages, chat),
-                )
-            }
+        <DownloadButton
+            filename={`chat-${chat.id}-user-prompts.md`}
+            content={formatUserPromptsMarkdown(messages, chat)}
         >
             <p>User Prompts</p>
             <FileText className="h-4 w-4" />
-        </button>
+        </DownloadButton>
     );
 }
 
@@ -177,17 +167,31 @@ export function CompleteChatDownloadButton({
     chat: Chat;
 }) {
     return (
+        <DownloadButton
+            filename={`chat-${chat.id}-complete-chat.md`}
+            content={formatCompleteChatMarkdown(messages, chat)}
+        >
+            <p>Entire Chat</p>
+            <FileText className="h-4 w-4" />
+        </DownloadButton>
+    );
+}
+
+function DownloadButton({
+    children,
+    filename,
+    content,
+}: {
+    children: React.ReactNode;
+    filename: string;
+    content: string;
+}) {
+    return (
         <button
             className="flex cursor-pointer items-center justify-center gap-2 rounded-sm p-2 hover:bg-accent"
-            onMouseDown={() =>
-                downloadMarkdown(
-                    `chat-${chat.id}-complete-chat.md`,
-                    formatCompleteChatMarkdown(messages, chat),
-                )
-            }
+            onMouseDown={() => downloadMarkdown(filename, content)}
         >
-            <p>Complete Chat</p>
-            <FileText className="h-4 w-4" />
+            {children}
         </button>
     );
 }
