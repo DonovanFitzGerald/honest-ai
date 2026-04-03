@@ -188,7 +188,7 @@ function DownloadButton({
 }) {
     return (
         <button
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-sm p-2 hover:bg-accent"
+            className="flex cursor-pointer items-center justify-center gap-2 rounded-sm p-2 text-sm hover:bg-accent"
             onMouseDown={() => downloadMarkdown(filename, content)}
         >
             {children}
