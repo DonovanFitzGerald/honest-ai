@@ -1,0 +1,147 @@
+import type { ChartSeries, DayBucket } from '@/types/dashboard';
+import type { ChartOptions } from 'chart.js';
+
+export function countValues(values: string[]): ChartSeries {
+    const counts: Record<string, number> = {};
+
+    for (const value of values) {
+        if (!value) continue;
+        counts[value] = (counts[value] ?? 0) + 1;
+    }
+
+    return Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .reduce(
+            (acc, [label, value]) => {
+                acc.labels.push(label);
+                acc.values.push(value);
+                return acc;
+            },
+            { labels: [] as string[], values: [] as number[] },
+        );
+}
+
+function formatDayLabel(date: Date): string {
+    return date.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+    });
+}
+
+function getDayKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function buildLastNDaysBuckets(days: number): DayBucket[] {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return Array.from({ length: days }, (_, index) => {
+        const date = new Date(today);
+        date.setDate(today.getDate() - (days - 1 - index));
+
+        return {
+            key: getDayKey(date),
+            label: formatDayLabel(date),
+        };
+    });
+}
+
+function toValidDate(value: string | null): Date | null {
+    if (!value) return null;
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function aggregatePerDay<T>(
+    rows: T[],
+    getCreatedAt: (row: T) => string | null,
+    getValue: (row: T) => number,
+    days = 14,
+): ChartSeries {
+    const buckets = buildLastNDaysBuckets(days);
+    const counts = new Map<string, number>(
+        buckets.map((bucket) => [bucket.key, 0]),
+    );
+
+    for (const row of rows) {
+        const date = toValidDate(getCreatedAt(row));
+        if (!date) continue;
+
+        const key = getDayKey(date);
+        if (!counts.has(key)) continue;
+
+        counts.set(key, (counts.get(key) ?? 0) + getValue(row));
+    }
+
+    return {
+        labels: buckets.map((bucket) => bucket.label),
+        values: buckets.map((bucket) => counts.get(bucket.key) ?? 0),
+    };
+}
+
+export function makePieData(
+    labels: string[],
+    values: number[],
+    backgroundColor: string[],
+) {
+    return {
+        labels,
+        datasets: [{ data: values, backgroundColor }],
+    };
+}
+
+export function makeBarData(
+    label: string,
+    labels: string[],
+    values: number[],
+    backgroundColor: string[],
+) {
+    return {
+        labels,
+        datasets: [
+            {
+                label,
+                data: values,
+                backgroundColor,
+                borderRadius: 8,
+                borderSkipped: false,
+                categoryPercentage: 0.9,
+                barPercentage: 0.95,
+            },
+        ],
+    };
+}
+
+export const barChartOptions = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+        x: { grid: { display: false }, border: { display: false } },
+        y: {
+            ticks: { display: false },
+            grid: { display: false },
+            border: { display: false },
+        },
+    },
+};
+
+export const pieChartOptions: ChartOptions<'pie'> = {
+    responsive: true,
+    layout: {
+        padding: 20,
+    },
+    plugins: {
+        legend: {
+            position: 'bottom' as const,
+            labels: {
+                padding: 10,
+                boxWidth: 20,
+            },
+        },
+    },
+};

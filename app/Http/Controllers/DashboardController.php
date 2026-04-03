@@ -39,7 +39,7 @@ class DashboardController extends Controller
             ])
             ->values();
 
-        return Inertia::render('dashboard', [
+        return Inertia::render('dashboard/index', [
             'cases' => $cases,
             'prompts' => $prompts,
             'assistantResponses' => $assistantResponses,
