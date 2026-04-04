@@ -1,0 +1,19 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          cd /opt/apps/honest-ai
+          git fetch origin
+          git reset --hard origin/main
+          docker compose up -d --build
+          docker compose exec -T app php artisan optimize:clear
+          docker compose exec -T app php artisan migrate --force
+          docker compose exec -T app php artisan config:cache
