@@ -36,8 +36,8 @@ export default function PieChartCard({
             />
             <div className="mb-3 flex flex-col items-center justify-center">
                 <h2 className="text-lg font-bold">
-                    {series.labels[0].charAt(0).toUpperCase() +
-                        series.labels[0].slice(1)}
+                    {series.labels[0]?.charAt(0)?.toUpperCase() +
+                        series.labels[0]?.slice(1)}
                 </h2>
                 <div className="text-md flex items-center justify-center gap-1 text-neutral-400">
                     <p>most common - {series.values[0]}</p>
