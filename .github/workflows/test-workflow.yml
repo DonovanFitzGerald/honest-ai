@@ -1,0 +1,21 @@
+name: Test Runner
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - name: Show user
+        run: whoami
+
+      - name: Show working directory
+        run: pwd
+
+      - name: Show docker version
+        run: docker --version
+
+      - name: Show compose version
+        run: docker compose version
