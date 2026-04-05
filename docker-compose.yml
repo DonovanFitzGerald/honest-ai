@@ -11,9 +11,9 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: 'false'
-    depends_on:
-      db:
-        condition: service_healthy
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
     volumes:
       - storage_data:/var/www/storage
       - cache_data:/var/www/bootstrap/cache
@@ -33,31 +33,31 @@ services:
     networks:
       - honest_ai
 
-  db:
-    image: mysql:8.0
-    container_name: honest_ai_db
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-    expose:
-      - '3306'
-    volumes:
-      - dbdata:/var/lib/mysql
-    healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD || exit 1',
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
-    networks:
-      - honest_ai
+  # db:
+  #   image: mysql:8.0
+  #   container_name: honest_ai_db
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_DATABASE: ${DB_DATABASE}
+  #     MYSQL_USER: ${DB_USERNAME}
+  #     MYSQL_PASSWORD: ${DB_PASSWORD}
+  #     MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+  #   expose:
+  #     - '3306'
+  #   volumes:
+  #     - dbdata:/var/lib/mysql
+  #   healthcheck:
+  #     test:
+  #       [
+  #         'CMD-SHELL',
+  #         'mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD || exit 1',
+  #       ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 10
+  #     start_period: 20s
+  #   networks:
+  #     - honest_ai
 
   ssr:
     build:
@@ -75,6 +75,6 @@ networks:
     driver: bridge
 
 volumes:
-  dbdata:
+  # dbdata:
   storage_data:
   cache_data:
