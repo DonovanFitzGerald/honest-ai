@@ -1,9 +1,9 @@
 services:
-  app:
+  laravel:
     build:
       context: .
       target: app
-    container_name: honest_ai_app
+    container_name: honest_ai_laravel
     restart: unless-stopped
     working_dir: /var/www
     env_file:
@@ -29,7 +29,7 @@ services:
     expose:
       - '80'
     depends_on:
-      - app
+      - laravel
     networks:
       - honest_ai
       - proxy
