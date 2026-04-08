@@ -26,38 +26,24 @@ services:
       dockerfile: docker/nginx/Dockerfile
     container_name: honest_ai_nginx
     restart: unless-stopped
-    ports:
-      - '80:80'
+    expose:
+      - '80'
     depends_on:
       - app
     networks:
       - honest_ai
-
-  # db:
-  #   image: mysql:8.0
-  #   container_name: honest_ai_db
-  #   restart: unless-stopped
-  #   environment:
-  #     MYSQL_DATABASE: ${DB_DATABASE}
-  #     MYSQL_USER: ${DB_USERNAME}
-  #     MYSQL_PASSWORD: ${DB_PASSWORD}
-  #     MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-  #   expose:
-  #     - '3306'
-  #   volumes:
-  #     - dbdata:/var/lib/mysql
-  #   healthcheck:
-  #     test:
-  #       [
-  #         'CMD-SHELL',
-  #         'mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD || exit 1',
-  #       ]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 10
-  #     start_period: 20s
-  #   networks:
-  #     - honest_ai
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${PROXY_NETWORK}
+      - traefik.http.routers.honest-ai.rule=Host(`${APP_DOMAIN}`)
+      - traefik.http.routers.honest-ai.entrypoints=websecure
+      - traefik.http.routers.honest-ai.tls=true
+      - traefik.http.services.honest-ai.loadbalancer.server.port=80
+      - monitoring.blackbox.enable=true
+      - monitoring.blackbox.hostname=${APP_DOMAIN}
+      - monitoring.blackbox.scheme=https
+      - monitoring.blackbox.path=/
 
   ssr:
     build:
@@ -73,6 +59,9 @@ services:
 networks:
   honest_ai:
     driver: bridge
+  proxy:
+    name: ${PROXY_NETWORK}
+    external: true
 
 volumes:
   # dbdata:
