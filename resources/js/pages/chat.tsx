@@ -71,18 +71,27 @@ export default function Show({
             const payload = (await response.json()) as {
                 message?: string;
                 errors?: Record<string, string[] | string>;
+                request_id?: string;
             };
+            const requestId =
+                typeof payload.request_id === 'string'
+                    ? payload.request_id
+                    : null;
 
             const errors = Object.values(payload.errors ?? {}).flatMap(
                 (value) => (Array.isArray(value) ? value : [value]),
             );
 
             if (errors.length > 0) {
-                return errors;
+                return requestId
+                    ? [...errors, `Reference ID: ${requestId}`]
+                    : errors;
             }
 
             if (payload.message) {
-                return [payload.message];
+                return requestId
+                    ? [payload.message, `Reference ID: ${requestId}`]
+                    : [payload.message];
             }
         } catch {
             // Fall back to a status-based message when the server returns no JSON body.

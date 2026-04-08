@@ -11,21 +11,37 @@ class AssistantService
     public function call(Chat $chat): array
     {
         $contents = $this->buildContentsFromChat($chat, includeAssistant: true);
+        $apiKey = config('services.google.api_key');
+
+        if (!is_string($apiKey) || trim($apiKey) === '') {
+            throw new RuntimeException('Google API key is not configured for assistant requests.');
+        }
 
         $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent';
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
-            'x-goog-api-key' => config('services.google.api_key'),
+            'x-goog-api-key' => $apiKey,
         ])->post($url, [
                     'contents' => $contents,
                 ]);
 
         if ($response->failed()) {
-            throw new RuntimeException('Assistant request failed: ' . $response->body());
+            throw new RuntimeException(
+                'Assistant request failed with status '
+                . $response->status()
+                . ': '
+                . $response->body()
+            );
         }
 
-        return $response->json();
+        $body = $response->json();
+
+        if (!is_array($body)) {
+            throw new RuntimeException('Assistant response was not valid JSON.');
+        }
+
+        return $body;
     }
 
     public function createUseLog(Chat $chat): array
