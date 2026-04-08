@@ -1,6 +1,7 @@
 import { Send } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { route } from 'ziggy-js';
+import AlertError from '@/components/alert-error';
 import ChatMessage from '@/components/chat-message';
 import { Button } from '@/components/ui/button';
 import { UseLogSidebar } from '@/components/use-log-sidebar';
@@ -23,6 +24,7 @@ export default function Show({
     const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
     const [sending, setSending] = useState(false);
     const [inputText, setInputText] = useState('');
+    const [sendErrors, setSendErrors] = useState<string[]>([]);
     const [useLog, setUseLog] = useState<UseLog | null>(
         initialUseLog?.total_use_cases ? initialUseLog : null,
     );
@@ -31,6 +33,7 @@ export default function Show({
         setUseLog(initialUseLog?.total_use_cases ? initialUseLog : null);
         setMessages(initialMessages ?? []);
         setInputText('');
+        setSendErrors([]);
         setSending(false);
     }, [chat.id, initialMessages, initialUseLog]);
 
@@ -54,6 +57,52 @@ export default function Show({
         scrollToBottom('instant');
     }, []);
 
+    const parseErrorResponse = async (response: Response): Promise<string[]> => {
+        const fallbackMessage =
+            'We could not send your message. Please try again.';
+
+        if (response.status === 419) {
+            return [
+                'Your session expired. Refresh the page and sign in again before sending another message.',
+            ];
+        }
+
+        try {
+            const payload = (await response.json()) as {
+                message?: string;
+                errors?: Record<string, string[] | string>;
+            };
+
+            const errors = Object.values(payload.errors ?? {}).flatMap(
+                (value) => (Array.isArray(value) ? value : [value]),
+            );
+
+            if (errors.length > 0) {
+                return errors;
+            }
+
+            if (payload.message) {
+                return [payload.message];
+            }
+        } catch {
+            // Fall back to a status-based message when the server returns no JSON body.
+        }
+
+        if (response.status === 422) {
+            return ['Your message could not be sent because the request was invalid.'];
+        }
+
+        if (response.status === 429) {
+            return ['Too many requests were sent. Wait a moment and try again.'];
+        }
+
+        if (response.status >= 500) {
+            return ['The server failed while sending your message. Please try again shortly.'];
+        }
+
+        return [fallbackMessage];
+    };
+
     const requestUseLog = async () => {
         try {
             const response = await fetch(
@@ -73,8 +122,6 @@ export default function Show({
             setUseLog(data.parsed);
         } catch (error) {
             console.error(error);
-        } finally {
-            console.log(useLog);
         }
     };
 
@@ -84,6 +131,7 @@ export default function Show({
 
         setSending(true);
         setInputText('');
+        setSendErrors([]);
 
         const tempId = Date.now();
         const tempUserMessage: Message = {
@@ -114,7 +162,10 @@ export default function Show({
                 },
             );
 
-            if (!response.ok) throw new Error('Failed to send message');
+            if (!response.ok) {
+                const errors = await parseErrorResponse(response);
+                throw new Error(errors.join('\n'));
+            }
 
             const data = await response.json();
 
@@ -128,6 +179,14 @@ export default function Show({
         } catch (error) {
             setMessages((prev) => prev.filter((m) => m.id !== tempId));
             setInputText(trimmed);
+            setSendErrors(
+                error instanceof Error
+                    ? error.message
+                          .split('\n')
+                          .map((message) => message.trim())
+                          .filter(Boolean)
+                    : ['We could not send your message. Please try again.'],
+            );
             console.error(error);
         } finally {
             setSending(false);
@@ -159,6 +218,14 @@ export default function Show({
                     )}
 
                     <div className="mx-auto flex w-full max-w-200 flex-col items-center justify-center gap-2 px-6 py-8">
+                        {sendErrors.length > 0 && (
+                            <div className="w-full">
+                                <AlertError
+                                    title="Message Not Sent"
+                                    errors={sendErrors}
+                                />
+                            </div>
+                        )}
                         {sending && (
                             <p className="animate-bounce text-neutral-400">
                                 Awaiting Response...
@@ -168,7 +235,13 @@ export default function Show({
                             <textarea
                                 className="peer/input field-sizing-content w-full resize-none px-4 focus:outline-none"
                                 placeholder="Ask anything..."
-                                onChange={(e) => setInputText(e.target.value)}
+                                onChange={(e) => {
+                                    if (sendErrors.length > 0) {
+                                        setSendErrors([]);
+                                    }
+
+                                    setInputText(e.target.value);
+                                }}
                                 onKeyDown={handleKeyDown}
                                 value={inputText}
                                 disabled={sending}
