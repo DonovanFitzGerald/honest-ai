@@ -13,6 +13,15 @@ return [
                 'tools' => true,
                 'vision' => true,
                 'json_mode' => true,
+                'thinking_levels' => [
+                    'low',
+                    'medium',
+                    'high',
+                ],
+                'built_in_tools' => [
+                    'google_search',
+                    'url_context',
+                ],
             ],
 
             'limits' => [
@@ -40,6 +49,15 @@ return [
                 'tools' => true,
                 'vision' => true,
                 'json_mode' => true,
+                'thinking_levels' => [
+                    'low',
+                    'medium',
+                    'high',
+                ],
+                'built_in_tools' => [
+                    'google_search',
+                    'url_context',
+                ],
             ],
 
             'limits' => [
@@ -67,6 +85,15 @@ return [
                 'tools' => true,
                 'vision' => true,
                 'json_mode' => true,
+                'thinking_levels' => [
+                    'low',
+                    'medium',
+                    'high',
+                ],
+                'built_in_tools' => [
+                    'google_search',
+                    'url_context',
+                ],
             ],
 
             'limits' => [
@@ -96,6 +123,10 @@ return [
                 'tools' => true,
                 'vision' => true,
                 'json_mode' => true,
+                'built_in_tools' => [
+                    'google_search',
+                    'url_context',
+                ],
             ],
 
             'limits' => [
@@ -123,6 +154,10 @@ return [
                 'tools' => true,
                 'vision' => true,
                 'json_mode' => true,
+                'built_in_tools' => [
+                    'google_search',
+                    'url_context',
+                ],
             ],
 
             'limits' => [
@@ -150,6 +185,10 @@ return [
                 'tools' => true,
                 'vision' => true,
                 'json_mode' => true,
+                'built_in_tools' => [
+                    'google_search',
+                    'url_context',
+                ],
             ],
 
             'limits' => [

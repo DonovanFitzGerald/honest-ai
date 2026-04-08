@@ -21,9 +21,26 @@ class MessageController extends Controller
         AssistantService $assistantService,
         AssistantModelRegistry $models,
     ) {
+        $requestedModel = $request->input('model');
+        $effectiveModelKey = is_string($requestedModel) && $requestedModel !== ''
+            ? $requestedModel
+            : $chat->messages()
+                ->where('role', 'assistant')
+                ->whereNotNull('model')
+                ->orderByDesc('sequence')
+                ->value('model');
+        $allowedTools = $models->builtInToolsFor($effectiveModelKey);
+        $allowedThinkingLevels = [
+            'default',
+            ...$models->thinkingLevelsFor($effectiveModelKey),
+        ];
+
         $validated = $request->validate([
             'content' => ['required', 'string'],
             'model' => ['sometimes', 'nullable', 'string', Rule::in($models->activeKeys())],
+            'tools' => ['sometimes', 'array'],
+            'tools.*' => ['string', Rule::in($allowedTools)],
+            'thinking_level' => ['sometimes', 'nullable', 'string', Rule::in($allowedThinkingLevels)],
         ]);
 
         $requestId = $request->header('X-Request-Id', (string) Str::uuid());
@@ -33,6 +50,8 @@ class MessageController extends Controller
             'chat_id' => $chat->id,
             'user_id' => $request->user()?->id,
             'requested_model' => $validated['model'] ?? null,
+            'requested_thinking_level' => $validated['thinking_level'] ?? null,
+            'requested_tools' => $validated['tools'] ?? [],
             'message_length' => mb_strlen($validated['content']),
         ];
 
@@ -53,10 +72,18 @@ class MessageController extends Controller
             });
 
             $stage = 'assistant_call';
-            $assistantReply = $assistantService->call($chat, $validated['model'] ?? null);
+            $assistantReply = $assistantService->call(
+                $chat,
+                $validated['model'] ?? null,
+                $validated['tools'] ?? [],
+                $validated['thinking_level'] ?? null,
+            );
 
             $stage = 'parse_assistant_response';
-            $assistantText = data_get($assistantReply, 'candidates.0.content.parts.0.text');
+            $assistantText = collect(data_get($assistantReply, 'candidates.0.content.parts', []))
+                ->pluck('text')
+                ->filter(fn ($value) => is_string($value) && trim($value) !== '')
+                ->implode("\n\n");
             $assistantTokenCount = data_get($assistantReply, 'usageMetadata.totalTokenCount');
             $assistantModel = data_get($assistantReply, 'modelVersion');
 

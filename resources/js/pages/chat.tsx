@@ -1,10 +1,16 @@
 import { usePage } from '@inertiajs/react';
-import { Send } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import { Plus, Send, X } from 'lucide-react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { route } from 'ziggy-js';
 import AlertError from '@/components/alert-error';
 import ChatMessage from '@/components/chat-message';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Select,
     SelectContent,
@@ -16,6 +22,9 @@ import { UseLogSidebar } from '@/components/use-log-sidebar';
 import AppLayout from '@/layouts/app-layout';
 import type { Chat, Message, UseLog } from '@/types/assistant';
 import type { AssistantModelsSharedData } from '@/types/assistant-models';
+
+type ThinkingLevel = string | null;
+type ToolOption = string;
 
 const getSelectedModel = (
     messages: Message[],
@@ -61,8 +70,35 @@ export default function Show({
     const [selectedModel, setSelectedModel] = useState(
         getSelectedModel(initialMessages ?? [], assistantModels),
     );
+
+    const selectedModelOption =
+        assistantModels.options.find(
+            (model) => model.value === selectedModel,
+        ) ?? null;
+
+    const thinkingLevelOptions = useMemo(
+        () => selectedModelOption?.thinking_levels ?? [],
+        [selectedModelOption],
+    );
+
+    const [thinkingLevel, setThinkingLevel] = useState<ThinkingLevel>(
+        thinkingLevelOptions[thinkingLevelOptions.length - 1],
+    );
+    const [selectedTools, setSelectedTools] = useState<ToolOption[]>([]);
     const [useLog, setUseLog] = useState<UseLog | null>(
         initialUseLog?.total_use_cases ? initialUseLog : null,
+    );
+
+    const availableToolOptions = useMemo(
+        () => selectedModelOption?.built_in_tools ?? [],
+        [selectedModelOption],
+    );
+    const addableToolOptions = useMemo(
+        () =>
+            availableToolOptions.filter(
+                (tool) => !selectedTools.includes(tool),
+            ),
+        [availableToolOptions, selectedTools],
     );
 
     useEffect(() => {
@@ -73,8 +109,21 @@ export default function Show({
         setSelectedModel(
             getSelectedModel(initialMessages ?? [], assistantModels),
         );
+        setThinkingLevel(thinkingLevelOptions[thinkingLevelOptions.length - 1]);
+        setSelectedTools([]);
         setSending(false);
-    }, [assistantModels, chat.id, initialMessages, initialUseLog]);
+    }, [
+        assistantModels,
+        chat.id,
+        initialMessages,
+        initialUseLog,
+        thinkingLevelOptions,
+    ]);
+    useEffect(() => {
+        setSelectedTools((prev) =>
+            prev.filter((tool) => availableToolOptions.includes(tool)),
+        );
+    }, [availableToolOptions]);
 
     const conversationDiv = useRef<HTMLDivElement | null>(null);
 
@@ -182,6 +231,16 @@ export default function Show({
         }
     };
 
+    const addTool = (tool: ToolOption) => {
+        setSelectedTools((prev) => {
+            return prev.includes(tool) ? prev : [...prev, tool];
+        });
+    };
+
+    const removeTool = (tool: ToolOption) => {
+        setSelectedTools((prev) => prev.filter((value) => value !== tool));
+    };
+
     const handleInputSubmit = async (content: string) => {
         const trimmed = content.trim();
         if (!trimmed || sending) return;
@@ -218,6 +277,8 @@ export default function Show({
                     body: JSON.stringify({
                         content: trimmed,
                         model: selectedModel,
+                        thinking_level: thinkingLevel,
+                        tools: selectedTools,
                     }),
                 },
             );
@@ -297,6 +358,7 @@ export default function Show({
                                 Awaiting Response...
                             </p>
                         )}
+
                         <div className="flex h-full max-h-60 min-h-14 w-full flex-col items-center justify-center gap-4 overflow-y-auto rounded-3xl border border-border p-2 shadow-lg has-focus-within:outline-1 has-focus-within:outline-black">
                             <textarea
                                 className="peer/input field-sizing-content w-full resize-none px-4 focus:outline-none"
@@ -312,14 +374,51 @@ export default function Show({
                                 value={inputText}
                                 disabled={sending}
                             />
-                            <div className="flex w-full justify-between peer-placeholder-shown/input:hidden">
-                                <div className="w-1/3">
+                            <div className="flex w-full items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                    {addableToolOptions.length > 0 && (
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    className="h-10 w-10 shrink-0 cursor-pointer rounded-full bg-background"
+                                                    disabled={
+                                                        sending ||
+                                                        availableToolOptions.length ===
+                                                            0
+                                                    }
+                                                >
+                                                    <Plus className="size-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent
+                                                align="end"
+                                                side="top"
+                                                className="w-56 rounded-lg"
+                                            >
+                                                {addableToolOptions.map(
+                                                    (tool) => (
+                                                        <DropdownMenuItem
+                                                            key={tool}
+                                                            className="cursor-pointer rounded-lg"
+                                                            onClick={() =>
+                                                                addTool(tool)
+                                                            }
+                                                        >
+                                                            {tool}
+                                                        </DropdownMenuItem>
+                                                    ),
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    )}
                                     <Select
                                         value={selectedModel}
                                         onValueChange={setSelectedModel}
                                         disabled={sending}
                                     >
-                                        <SelectTrigger className="h-11 rounded-2xl bg-background">
+                                        <SelectTrigger className="h-full w-fit min-w-32 cursor-pointer flex-nowrap truncate rounded-2xl bg-background">
                                             <SelectValue placeholder="Choose a model" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -328,6 +427,7 @@ export default function Show({
                                                     <SelectItem
                                                         key={model.value}
                                                         value={model.value}
+                                                        className="cursor-pointer"
                                                     >
                                                         {model.label}
                                                     </SelectItem>
@@ -335,8 +435,70 @@ export default function Show({
                                             )}
                                         </SelectContent>
                                     </Select>
+                                    {thinkingLevelOptions.length > 0 && (
+                                        <Select
+                                            value={
+                                                thinkingLevel ||
+                                                thinkingLevelOptions[
+                                                    thinkingLevelOptions.length -
+                                                        1
+                                                ]
+                                            }
+                                            onValueChange={(value) =>
+                                                setThinkingLevel(
+                                                    value as ThinkingLevel,
+                                                )
+                                            }
+                                            disabled={sending}
+                                        >
+                                            <SelectTrigger className="h-full w-fit min-w-32 cursor-pointer flex-nowrap truncate rounded-2xl bg-background">
+                                                <SelectValue placeholder="Thinking level" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {thinkingLevelOptions.length >
+                                                    0 &&
+                                                    thinkingLevelOptions.map(
+                                                        (option) => (
+                                                            <SelectItem
+                                                                key={option}
+                                                                value={option}
+                                                                className="cursor-pointer"
+                                                            >
+                                                                {option}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
                                 </div>
+                                {selectedTools.length > 0 && (
+                                    <div className="flex w-full flex-wrap gap-2">
+                                        {selectedTools.map((tool) => (
+                                            <div
+                                                key={tool}
+                                                className="flex items-center gap-2 rounded-2xl border border-border bg-accent px-3 py-2 text-sm shadow-sm"
+                                            >
+                                                <p className="text-accent-foreground">
+                                                    {tool.split('_').join(' ')}
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    className="flex size-5 cursor-pointer items-center justify-center rounded-full text-accent-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                                    onClick={() =>
+                                                        removeTool(tool)
+                                                    }
+                                                    disabled={sending}
+                                                    aria-label={`Remove ${tool}`}
+                                                >
+                                                    <X className="size-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                                 <Button
+                                    type="button"
                                     className="flex aspect-square h-10 w-10 cursor-pointer justify-center rounded-full bg-primary text-primary-foreground"
                                     onClick={() => handleInputSubmit(inputText)}
                                     disabled={sending}

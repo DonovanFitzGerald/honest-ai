@@ -34,6 +34,8 @@ class AssistantModelRegistry
                         'tools' => (bool) data_get($model, 'capabilities.tools', false),
                         'vision' => (bool) data_get($model, 'capabilities.vision', false),
                         'json_mode' => (bool) data_get($model, 'capabilities.json_mode', false),
+                        'thinking_levels' => array_values(data_get($model, 'capabilities.thinking_levels', [])),
+                        'built_in_tools' => array_values(data_get($model, 'capabilities.built_in_tools', [])),
                     ],
                     'limits' => [
                         'context_window' => data_get($model, 'limits.context_window'),
@@ -64,6 +66,8 @@ class AssistantModelRegistry
                 'supports_tools' => (bool) data_get($model, 'capabilities.tools', false),
                 'supports_vision' => (bool) data_get($model, 'capabilities.vision', false),
                 'supports_json_mode' => (bool) data_get($model, 'capabilities.json_mode', false),
+                'thinking_levels' => array_values(data_get($model, 'capabilities.thinking_levels', [])),
+                'built_in_tools' => array_values(data_get($model, 'capabilities.built_in_tools', [])),
             ])
             ->values()
             ->all();
@@ -107,5 +111,27 @@ class AssistantModelRegistry
         }
 
         return array_key_first($models);
+    }
+
+    public function thinkingLevelsFor(?string $key): array
+    {
+        $resolvedKey = $this->resolveKey($key);
+
+        if (!is_string($resolvedKey) || $resolvedKey === '') {
+            return [];
+        }
+
+        return array_values(data_get($this->all()[$resolvedKey] ?? [], 'capabilities.thinking_levels', []));
+    }
+
+    public function builtInToolsFor(?string $key): array
+    {
+        $resolvedKey = $this->resolveKey($key);
+
+        if (!is_string($resolvedKey) || $resolvedKey === '') {
+            return [];
+        }
+
+        return array_values(data_get($this->all()[$resolvedKey] ?? [], 'capabilities.built_in_tools', []));
     }
 }

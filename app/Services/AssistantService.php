@@ -11,10 +11,15 @@ class AssistantService
 {
     public function __construct(
         private readonly AssistantModelRegistry $models,
-    ) {}
+    ) {
+    }
 
-    public function call(Chat $chat, ?string $requestedModelKey = null): array
-    {
+    public function call(
+        Chat $chat,
+        ?string $requestedModelKey = null,
+        array $requestedTools = [],
+        ?string $thinkingLevel = null,
+    ): array {
         $contents = $this->buildContentsFromChat($chat, includeAssistant: true);
         $apiKey = config('services.google.api_key');
         $modelKey = $this->resolveModelKey($chat, $requestedModelKey);
@@ -24,13 +29,16 @@ class AssistantService
         }
 
         $url = $this->buildGenerateContentUrl($modelKey);
+        $payload = $this->buildChatPayload(
+            $contents,
+            $requestedTools,
+            $thinkingLevel,
+        );
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'x-goog-api-key' => $apiKey,
-        ])->post($url, [
-                    'contents' => $contents,
-                ]);
+        ])->post($url, $payload);
 
         if ($response->failed()) {
             throw new RuntimeException(
@@ -194,6 +202,55 @@ class AssistantService
     private function buildGenerateContentUrl(string $modelKey): string
     {
         return "https://generativelanguage.googleapis.com/v1beta/models/{$modelKey}:generateContent";
+    }
+
+    private function buildChatPayload(
+        array $contents,
+        array $requestedTools = [],
+        ?string $thinkingLevel = null,
+    ): array {
+        $payload = [
+            'contents' => $contents,
+        ];
+
+        $tools = $this->buildToolsPayload($requestedTools);
+
+        if ($tools !== []) {
+            $payload['tools'] = $tools;
+        }
+
+        $thinkingConfig = strtoupper($thinkingLevel);
+
+        if ($thinkingConfig !== null) {
+            $payload['generationConfig'] = [
+                'thinkingConfig' => $thinkingConfig,
+            ];
+        }
+
+        return $payload;
+    }
+
+    private function buildToolsPayload(array $requestedTools): array
+    {
+        $enabledTools = array_values(array_unique(array_filter(
+            $requestedTools,
+            fn($tool): bool => is_string($tool),
+        )));
+
+        return array_map(
+            fn(string $tool): array => $this->buildToolPayload($tool),
+            $enabledTools,
+        );
+    }
+
+    private function buildToolPayload(string $tool): array
+    {
+        return match ($tool) {
+            'google_search' => ['googleSearch' => new \stdClass],
+            'url_context' => ['urlContext' => new \stdClass],
+            'code_execution' => ['codeExecution' => new \stdClass],
+            default => [],
+        };
     }
 
     private function buildContentsFromChat(Chat $chat, bool $includeAssistant = true): array

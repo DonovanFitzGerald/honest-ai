@@ -2,6 +2,8 @@ export type ModelCapabilitySet = {
     tools: boolean;
     vision: boolean;
     json_mode: boolean;
+    thinking_levels: string[];
+    built_in_tools: string[];
 };
 
 export type ModelLimits = {
@@ -40,6 +42,8 @@ export type AssistantModelOption = {
     supports_tools: boolean;
     supports_vision: boolean;
     supports_json_mode: boolean;
+    thinking_levels: string[];
+    built_in_tools: string[];
 };
 
 export type AssistantModelsSharedData = {
