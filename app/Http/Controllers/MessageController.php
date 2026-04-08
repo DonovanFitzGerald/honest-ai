@@ -5,18 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Chat;
 use App\Models\Message;
 use App\Services\AssistantService;
+use App\Support\AssistantModelRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class MessageController extends Controller
 {
-    public function store(Request $request, Chat $chat, AssistantService $assistantService)
-    {
+    public function store(
+        Request $request,
+        Chat $chat,
+        AssistantService $assistantService,
+        AssistantModelRegistry $models,
+    ) {
         $validated = $request->validate([
             'content' => ['required', 'string'],
+            'model' => ['sometimes', 'nullable', 'string', Rule::in($models->activeKeys())],
         ]);
 
         $requestId = $request->header('X-Request-Id', (string) Str::uuid());
@@ -25,6 +32,7 @@ class MessageController extends Controller
             'route' => $request->route()?->getName(),
             'chat_id' => $chat->id,
             'user_id' => $request->user()?->id,
+            'requested_model' => $validated['model'] ?? null,
             'message_length' => mb_strlen($validated['content']),
         ];
 
@@ -45,7 +53,7 @@ class MessageController extends Controller
             });
 
             $stage = 'assistant_call';
-            $assistantReply = $assistantService->call($chat);
+            $assistantReply = $assistantService->call($chat, $validated['model'] ?? null);
 
             $stage = 'parse_assistant_response';
             $assistantText = data_get($assistantReply, 'candidates.0.content.parts.0.text');

@@ -3,21 +3,27 @@
 namespace App\Services;
 
 use App\Models\Chat;
+use App\Support\AssistantModelRegistry;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class AssistantService
 {
-    public function call(Chat $chat): array
+    public function __construct(
+        private readonly AssistantModelRegistry $models,
+    ) {}
+
+    public function call(Chat $chat, ?string $requestedModelKey = null): array
     {
         $contents = $this->buildContentsFromChat($chat, includeAssistant: true);
         $apiKey = config('services.google.api_key');
+        $modelKey = $this->resolveModelKey($chat, $requestedModelKey);
 
         if (!is_string($apiKey) || trim($apiKey) === '') {
             throw new RuntimeException('Google API key is not configured for assistant requests.');
         }
 
-        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent';
+        $url = $this->buildGenerateContentUrl($modelKey);
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
@@ -44,10 +50,16 @@ class AssistantService
         return $body;
     }
 
-    public function createUseLog(Chat $chat): array
+    public function createUseLog(Chat $chat, ?string $requestedModelKey = null): array
     {
         $promptPath = resource_path('prompts/AI_LOG_FORMATTER.md');
         $schemaPath = resource_path('prompts/AI_LOG_SCHEMA.json');
+        $apiKey = config('services.google.api_key');
+        $modelKey = $this->resolveModelKey($chat, $requestedModelKey);
+
+        if (!is_string($apiKey) || trim($apiKey) === '') {
+            throw new RuntimeException('Google API key is not configured for use-log requests.');
+        }
 
         $systemPrompt = file_get_contents($promptPath);
         $schemaJson = file_get_contents($schemaPath);
@@ -70,7 +82,7 @@ class AssistantService
 
         $contents = $this->buildContentsFromChat($chat, includeAssistant: true);
 
-        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent';
+        $url = $this->buildGenerateContentUrl($modelKey);
 
         $payload = [
             'system_instruction' => [
@@ -87,14 +99,23 @@ class AssistantService
 
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
-            'x-goog-api-key' => config('services.google.api_key'),
+            'x-goog-api-key' => $apiKey,
         ])->post($url, $payload);
 
         if ($response->failed()) {
-            throw new RuntimeException('Use log request failed: ' . $response->body());
+            throw new RuntimeException(
+                'Use log request failed with status '
+                . $response->status()
+                . ': '
+                . $response->body()
+            );
         }
 
         $body = $response->json();
+
+        if (!is_array($body)) {
+            throw new RuntimeException('Use log response was not valid JSON.');
+        }
 
         $text = data_get($body, 'candidates.0.content.parts.0.text');
 
@@ -143,6 +164,36 @@ class AssistantService
         }
 
         return $parsed;
+    }
+
+    private function resolveModelKey(Chat $chat, ?string $requestedModelKey = null): string
+    {
+        if (is_string($requestedModelKey) && $requestedModelKey !== '') {
+            $modelKey = $this->models->resolveKey($requestedModelKey);
+
+            if (is_string($modelKey) && $modelKey !== '') {
+                return $modelKey;
+            }
+        }
+
+        $latestAssistantModel = $chat->messages()
+            ->where('role', 'assistant')
+            ->whereNotNull('model')
+            ->orderByDesc('sequence')
+            ->value('model');
+
+        $modelKey = $this->models->resolveKey($latestAssistantModel);
+
+        if (!is_string($modelKey) || $modelKey === '') {
+            throw new RuntimeException('No active assistant model is configured.');
+        }
+
+        return $modelKey;
+    }
+
+    private function buildGenerateContentUrl(string $modelKey): string
+    {
+        return "https://generativelanguage.googleapis.com/v1beta/models/{$modelKey}:generateContent";
     }
 
     private function buildContentsFromChat(Chat $chat, bool $includeAssistant = true): array

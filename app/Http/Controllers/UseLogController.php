@@ -5,14 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Chat;
 use App\Models\UseLog;
 use App\Services\AssistantService;
+use App\Support\AssistantModelRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class UseLogController extends Controller
 {
-    public function store(Request $request, Chat $chat, AssistantService $assistantService)
+    public function store(
+        Request $request,
+        Chat $chat,
+        AssistantService $assistantService,
+        AssistantModelRegistry $models,
+    )
     {
-        $useLogData = $assistantService->createUseLog($chat);
+        $validated = $request->validate([
+            'model' => ['sometimes', 'nullable', 'string', Rule::in($models->activeKeys())],
+        ]);
+
+        $useLogData = $assistantService->createUseLog($chat, $validated['model'] ?? null);
 
         $chatSnapshot = $chat->messages()
             ->orderBy('sequence')

@@ -1,4 +1,3 @@
-import { AlertCircleIcon } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function AlertError({
@@ -9,8 +8,7 @@ export default function AlertError({
     title?: string;
 }) {
     return (
-        <Alert variant="destructive">
-            <AlertCircleIcon />
+        <Alert variant="default">
             <AlertTitle>{title || 'Something went wrong.'}</AlertTitle>
             <AlertDescription>
                 <ul className="list-inside list-disc text-sm">

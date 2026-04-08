@@ -17,6 +17,11 @@ class AssistantModelRegistry
         );
     }
 
+    public function activeKeys(): array
+    {
+        return array_keys($this->active());
+    }
+
     public function all_models(): array
     {
         return collect($this->all())
@@ -71,11 +76,36 @@ class AssistantModelRegistry
 
     public function default(): string
     {
-        return config('assistantmodels.default');
+        $default = (string) config('assistantmodels.default', '');
+
+        if ($default !== '' && isset($this->all()[$default])) {
+            return $default;
+        }
+
+        return array_key_first($this->active())
+            ?? array_key_first($this->all())
+            ?? '';
     }
 
     public function defaultModel(): ?array
     {
         return $this->find($this->default());
+    }
+
+    public function resolveKey(?string $key, bool $activeOnly = true): ?string
+    {
+        $models = $activeOnly ? $this->active() : $this->all();
+
+        if (is_string($key) && isset($models[$key])) {
+            return $key;
+        }
+
+        $default = $this->default();
+
+        if ($default !== '' && isset($models[$default])) {
+            return $default;
+        }
+
+        return array_key_first($models);
     }
 }

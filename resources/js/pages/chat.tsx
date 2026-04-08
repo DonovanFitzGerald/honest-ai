@@ -1,12 +1,41 @@
+import { usePage } from '@inertiajs/react';
 import { Send } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { route } from 'ziggy-js';
 import AlertError from '@/components/alert-error';
 import ChatMessage from '@/components/chat-message';
 import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { UseLogSidebar } from '@/components/use-log-sidebar';
 import AppLayout from '@/layouts/app-layout';
 import type { Chat, Message, UseLog } from '@/types/assistant';
+import type { AssistantModelsSharedData } from '@/types/assistant-models';
+
+const getSelectedModel = (
+    messages: Message[],
+    assistantModels: AssistantModelsSharedData,
+): string => {
+    const activeModels = new Set(
+        assistantModels.options.map((model) => model.value),
+    );
+
+    const latestAssistantModel = [...messages]
+        .reverse()
+        .find(
+            (message) =>
+                message.role === 'assistant' &&
+                typeof message.model === 'string' &&
+                activeModels.has(message.model),
+        )?.model;
+
+    return latestAssistantModel ?? assistantModels.default;
+};
 
 export default function Show({
     chat,
@@ -17,6 +46,10 @@ export default function Show({
     messages: Message[];
     useLog: UseLog | null;
 }) {
+    const { assistantModels } = usePage<{
+        assistantModels: AssistantModelsSharedData;
+    }>().props;
+
     const breadcrumbs = [
         { title: chat.title ?? `Chat #${chat.id}`, href: `/chats/${chat.id}` },
     ];
@@ -25,6 +58,9 @@ export default function Show({
     const [sending, setSending] = useState(false);
     const [inputText, setInputText] = useState('');
     const [sendErrors, setSendErrors] = useState<string[]>([]);
+    const [selectedModel, setSelectedModel] = useState(
+        getSelectedModel(initialMessages ?? [], assistantModels),
+    );
     const [useLog, setUseLog] = useState<UseLog | null>(
         initialUseLog?.total_use_cases ? initialUseLog : null,
     );
@@ -34,8 +70,11 @@ export default function Show({
         setMessages(initialMessages ?? []);
         setInputText('');
         setSendErrors([]);
+        setSelectedModel(
+            getSelectedModel(initialMessages ?? [], assistantModels),
+        );
         setSending(false);
-    }, [chat.id, initialMessages, initialUseLog]);
+    }, [assistantModels, chat.id, initialMessages, initialUseLog]);
 
     const conversationDiv = useRef<HTMLDivElement | null>(null);
 
@@ -57,7 +96,9 @@ export default function Show({
         scrollToBottom('instant');
     }, []);
 
-    const parseErrorResponse = async (response: Response): Promise<string[]> => {
+    const parseErrorResponse = async (
+        response: Response,
+    ): Promise<string[]> => {
         const fallbackMessage =
             'We could not send your message. Please try again.';
 
@@ -98,21 +139,27 @@ export default function Show({
         }
 
         if (response.status === 422) {
-            return ['Your message could not be sent because the request was invalid.'];
+            return [
+                'Your message could not be sent because the request was invalid.',
+            ];
         }
 
         if (response.status === 429) {
-            return ['Too many requests were sent. Wait a moment and try again.'];
+            return [
+                'Too many requests were sent. Wait a moment and try again.',
+            ];
         }
 
         if (response.status >= 500) {
-            return ['The server failed while sending your message. Please try again shortly.'];
+            return [
+                'The server failed while sending your message. Please try again shortly.',
+            ];
         }
 
         return [fallbackMessage];
     };
 
-    const requestUseLog = async () => {
+    const requestUseLog = async (model: string | null = null) => {
         try {
             const response = await fetch(
                 route('chats.use-logs.store', { chat: chat.id }),
@@ -124,6 +171,7 @@ export default function Show({
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrf,
                     },
+                    body: JSON.stringify(model ? { model } : {}),
                 },
             );
             if (!response.ok) return;
@@ -167,7 +215,10 @@ export default function Show({
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrf,
                     },
-                    body: JSON.stringify({ content: trimmed }),
+                    body: JSON.stringify({
+                        content: trimmed,
+                        model: selectedModel,
+                    }),
                 },
             );
 
@@ -184,7 +235,13 @@ export default function Show({
                 data.assistantMessage,
             ]);
 
-            requestUseLog();
+            const responseModel =
+                typeof data.assistantMessage?.model === 'string'
+                    ? data.assistantMessage.model
+                    : selectedModel;
+
+            setSelectedModel(responseModel);
+            requestUseLog(responseModel);
         } catch (error) {
             setMessages((prev) => prev.filter((m) => m.id !== tempId));
             setInputText(trimmed);
@@ -228,7 +285,7 @@ export default function Show({
 
                     <div className="mx-auto flex w-full max-w-200 flex-col items-center justify-center gap-2 px-6 py-8">
                         {sendErrors.length > 0 && (
-                            <div className="w-full">
+                            <div className="w-fit">
                                 <AlertError
                                     title="Message Not Sent"
                                     errors={sendErrors}
@@ -240,7 +297,7 @@ export default function Show({
                                 Awaiting Response...
                             </p>
                         )}
-                        <div className="flex h-full max-h-60 min-h-14 w-full flex-col items-center justify-center gap-2 overflow-y-auto rounded-3xl border border-border p-2 shadow-lg has-focus-within:outline-1 has-focus-within:outline-black">
+                        <div className="flex h-full max-h-60 min-h-14 w-full flex-col items-center justify-center gap-4 overflow-y-auto rounded-3xl border border-border p-2 shadow-lg has-focus-within:outline-1 has-focus-within:outline-black">
                             <textarea
                                 className="peer/input field-sizing-content w-full resize-none px-4 focus:outline-none"
                                 placeholder="Ask anything..."
@@ -255,7 +312,30 @@ export default function Show({
                                 value={inputText}
                                 disabled={sending}
                             />
-                            <div className="flex w-full justify-end peer-placeholder-shown/input:hidden">
+                            <div className="flex w-full justify-between peer-placeholder-shown/input:hidden">
+                                <div className="w-1/3">
+                                    <Select
+                                        value={selectedModel}
+                                        onValueChange={setSelectedModel}
+                                        disabled={sending}
+                                    >
+                                        <SelectTrigger className="h-11 rounded-2xl bg-background">
+                                            <SelectValue placeholder="Choose a model" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {assistantModels.options.map(
+                                                (model) => (
+                                                    <SelectItem
+                                                        key={model.value}
+                                                        value={model.value}
+                                                    >
+                                                        {model.label}
+                                                    </SelectItem>
+                                                ),
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                                 <Button
                                     className="flex aspect-square h-10 w-10 cursor-pointer justify-center rounded-full bg-primary text-primary-foreground"
                                     onClick={() => handleInputSubmit(inputText)}
