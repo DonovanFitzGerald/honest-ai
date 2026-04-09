@@ -54,16 +54,29 @@ export default function EnergyEquivalentsCard({
     ];
 
     return (
-        <div className="flex">
-            {data.map((item) => (
-                <EnergyMetricDisplayCard
-                    key={item.title}
-                    title={item.title}
-                    value={item.value}
-                    unit={item.unit}
-                    icon={item.icon}
-                />
-            ))}
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-sidebar-accent p-6">
+            <div className="flex flex-col items-center">
+                <p className="font-medium">
+                    {energyCost > 1000
+                        ? `${(energyCost * 1000).toFixed(0)} kWh`
+                        : `${energyCost.toFixed(2)} Wh`}
+                </p>
+                <p className="text-sm text-neutral-400">is equivalent to...</p>
+            </div>
+            <div className="grid grid-cols-3 gap-4 border-t border-sidebar-accent">
+                {data.map((item) => (
+                    <EnergyMetricDisplayCard
+                        key={item.title}
+                        title={item.title}
+                        value={item.value}
+                        unit={item.unit}
+                        icon={item.icon}
+                    />
+                ))}
+            </div>
+            <p className="text-sm text-neutral-400">
+                Estimates are conservative. Real costs could be much higher.
+            </p>
         </div>
     );
 }
@@ -80,10 +93,16 @@ function EnergyMetricDisplayCard({
     icon: React.ReactNode;
 }) {
     return (
-        <div className="flex w-40 flex-col items-center justify-center border">
-            {icon}
-            <h2>{title}</h2>
-            <p>
+        <div className="grid w-full grid-rows-3 items-center justify-center">
+            <h2 className="mt-auto w-full py-2 text-center text-lg font-medium text-wrap">
+                {title}
+            </h2>
+            <div className="flex flex-col items-center justify-center">
+                <div className="flex aspect-square items-center rounded-lg bg-primary p-4 text-primary-foreground">
+                    {icon}
+                </div>
+            </div>
+            <p className="mb-auto py-2 text-center">
                 {value} {unit}
             </p>
         </div>

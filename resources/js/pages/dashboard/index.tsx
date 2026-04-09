@@ -27,9 +27,9 @@ import {
     countValues,
     computeWindowStats,
 } from './chart-utils';
+import EnergyEquivalentsCard from './energy-equivalents-card';
 import EnergyUsageCard from './energy-usage-card';
 import PieChartCard from './pie-chart-card';
-import EnergyEquivalentsCard from './energy-equivalents-card';
 
 ChartJS.register(
     ArcElement,
@@ -135,6 +135,8 @@ export default function Dashboard() {
                     tokensPerDay={tokensPerDay}
                     stats={tokenStats}
                 />
+            </div>
+            <div className="grid gap-4 px-4 pb-4 md:grid-cols-3">
                 <EnergyEquivalentsCard stats={tokenStats} />
             </div>
         </AppLayout>
