@@ -92,52 +92,53 @@ export default function Dashboard() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
 
-            <div className="grid gap-4 p-4 md:grid-cols-3">
-                <PieChartCard
-                    title="Input types"
-                    icon={<MessageCircleQuestion />}
-                    series={inputCounts}
-                    colorFrom="#F2FBF4"
-                    colorTo="#069971"
-                />
-                <PieChartCard
-                    title="Output types"
-                    icon={<MessageCircleReply />}
-                    series={outputCounts}
-                    colorFrom="#FFF1F3"
-                    colorTo="#BF0F35"
-                />
-                <PieChartCard
-                    title="Assistant roles"
-                    icon={<User />}
-                    series={roleCounts}
-                    colorFrom="#FFFBEA"
-                    colorTo="#E68309"
-                />
-            </div>
-
-            <div className="grid gap-4 px-4 pb-4 md:grid-cols-3">
-                <BarChartCard
-                    label="Prompts"
-                    series={promptsPerDay}
-                    stats={promptStats}
-                    colorFrom="#EAF4FF"
-                    colorTo="#2563EB"
-                />
-                <BarChartCard
-                    label="Tokens"
-                    series={tokensPerDay}
-                    stats={tokenStats}
-                    colorFrom="#F3E8FF"
-                    colorTo="#7C3AED"
-                />
-                <EnergyUsageCard
-                    tokensPerDay={tokensPerDay}
-                    stats={tokenStats}
-                />
-            </div>
-            <div className="grid gap-4 px-4 pb-4 md:grid-cols-3">
-                <EnergyEquivalentsCard stats={tokenStats} />
+            <div className="flex flex-col gap-4 p-4">
+                <div className="grid gap-4 md:grid-cols-3">
+                    <PieChartCard
+                        title="Input types"
+                        icon={<MessageCircleQuestion />}
+                        series={inputCounts}
+                        colorFrom="#F2FBF4"
+                        colorTo="#069971"
+                    />
+                    <PieChartCard
+                        title="Output types"
+                        icon={<MessageCircleReply />}
+                        series={outputCounts}
+                        colorFrom="#FFF1F3"
+                        colorTo="#BF0F35"
+                    />
+                    <PieChartCard
+                        title="Assistant roles"
+                        icon={<User />}
+                        series={roleCounts}
+                        colorFrom="#FFFBEA"
+                        colorTo="#E68309"
+                    />
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                    <BarChartCard
+                        label="Prompts"
+                        series={promptsPerDay}
+                        stats={promptStats}
+                        colorFrom="#EAF4FF"
+                        colorTo="#2563EB"
+                    />
+                    <BarChartCard
+                        label="Tokens"
+                        series={tokensPerDay}
+                        stats={tokenStats}
+                        colorFrom="#F3E8FF"
+                        colorTo="#7C3AED"
+                    />
+                    <EnergyUsageCard
+                        tokensPerDay={tokensPerDay}
+                        stats={tokenStats}
+                    />
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                    <EnergyEquivalentsCard stats={tokenStats} />
+                </div>
             </div>
         </AppLayout>
     );
