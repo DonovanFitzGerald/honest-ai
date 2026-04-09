@@ -22,9 +22,14 @@ import type {
     DashboardProps,
 } from '@/types/dashboard';
 import BarChartCard from './bar-chart-card';
-import { aggregatePerDay, countValues, computeWindowStats } from './chart-utils';
+import {
+    aggregatePerDay,
+    countValues,
+    computeWindowStats,
+} from './chart-utils';
 import EnergyUsageCard from './energy-usage-card';
 import PieChartCard from './pie-chart-card';
+import EnergyEquivalentsCard from './energy-equivalents-card';
 
 ChartJS.register(
     ArcElement,
@@ -126,7 +131,11 @@ export default function Dashboard() {
                     colorFrom="#F3E8FF"
                     colorTo="#7C3AED"
                 />
-                <EnergyUsageCard tokensPerDay={tokensPerDay} stats={tokenStats} />
+                <EnergyUsageCard
+                    tokensPerDay={tokensPerDay}
+                    stats={tokenStats}
+                />
+                <EnergyEquivalentsCard stats={tokenStats} />
             </div>
         </AppLayout>
     );
