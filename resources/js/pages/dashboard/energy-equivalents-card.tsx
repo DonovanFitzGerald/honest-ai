@@ -21,22 +21,33 @@ export default function EnergyEquivalentsCard({
     const water = energyCost * EnergyConversions.wattHour.water;
     const co2 = energyCost * EnergyConversions.wattHour.co2;
 
-    const data = [
+    const data: {
+        title: string;
+        value: number;
+        unit: string;
+        icon: React.ReactNode;
+    }[] = [
         {
             title: 'Google Searches',
-            value: googleSearches,
+            value: parseInt(googleSearches.toFixed(0)),
             unit: 'Searches',
             icon: <Search />,
         },
         {
             title: 'Water',
-            value: water > 1 ? water : water * 1000,
+            value:
+                water > 1
+                    ? parseInt(water.toFixed(2))
+                    : parseInt((water * 1000).toFixed(0)),
             unit: water > 1 ? 'Litres' : 'ml',
             icon: <Droplet />,
         },
         {
             title: 'CO2',
-            value: co2 > 1 ? co2 : co2 * 1000,
+            value:
+                co2 > 1
+                    ? parseInt(co2.toFixed(2))
+                    : parseInt((co2 * 1000).toFixed(2)),
             unit: co2 > 1 ? 'kg' : 'g',
             icon: <Cloud />,
         },
@@ -73,7 +84,7 @@ function EnergyMetricDisplayCard({
             {icon}
             <h2>{title}</h2>
             <p>
-                {value.toFixed(2)} {unit}
+                {value} {unit}
             </p>
         </div>
     );
