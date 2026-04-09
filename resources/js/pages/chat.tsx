@@ -46,6 +46,9 @@ const getSelectedModel = (
     return latestAssistantModel ?? assistantModels.default;
 };
 
+const getDefaultThinkingLevel = (thinkingLevelOptions: string[]): ThinkingLevel =>
+    thinkingLevelOptions[thinkingLevelOptions.length - 1] ?? null;
+
 export default function Show({
     chat,
     messages: initialMessages,
@@ -82,7 +85,7 @@ export default function Show({
     );
 
     const [thinkingLevel, setThinkingLevel] = useState<ThinkingLevel>(
-        thinkingLevelOptions[thinkingLevelOptions.length - 1],
+        getDefaultThinkingLevel(thinkingLevelOptions),
     );
     const [selectedTools, setSelectedTools] = useState<ToolOption[]>([]);
     const [useLog, setUseLog] = useState<UseLog | null>(
@@ -102,14 +105,21 @@ export default function Show({
     );
 
     useEffect(() => {
+        const nextSelectedModel = getSelectedModel(
+            initialMessages ?? [],
+            assistantModels,
+        );
+        const nextThinkingLevelOptions =
+            assistantModels.options.find(
+                (model) => model.value === nextSelectedModel,
+            )?.thinking_levels ?? [];
+
         setUseLog(initialUseLog?.total_use_cases ? initialUseLog : null);
         setMessages(initialMessages ?? []);
         setInputText('');
         setSendErrors([]);
-        setSelectedModel(
-            getSelectedModel(initialMessages ?? [], assistantModels),
-        );
-        setThinkingLevel(thinkingLevelOptions[thinkingLevelOptions.length - 1]);
+        setSelectedModel(nextSelectedModel);
+        setThinkingLevel(getDefaultThinkingLevel(nextThinkingLevelOptions));
         setSelectedTools([]);
         setSending(false);
     }, [
@@ -117,13 +127,30 @@ export default function Show({
         chat.id,
         initialMessages,
         initialUseLog,
-        thinkingLevelOptions,
     ]);
+
     useEffect(() => {
         setSelectedTools((prev) =>
             prev.filter((tool) => availableToolOptions.includes(tool)),
         );
     }, [availableToolOptions]);
+
+    useEffect(() => {
+        setThinkingLevel((currentThinkingLevel) => {
+            if (thinkingLevelOptions.length === 0) {
+                return null;
+            }
+
+            if (
+                currentThinkingLevel &&
+                thinkingLevelOptions.includes(currentThinkingLevel)
+            ) {
+                return currentThinkingLevel;
+            }
+
+            return getDefaultThinkingLevel(thinkingLevelOptions);
+        });
+    }, [thinkingLevelOptions]);
 
     const conversationDiv = useRef<HTMLDivElement | null>(null);
 

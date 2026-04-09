@@ -30,6 +30,7 @@ class AssistantService
 
         $url = $this->buildGenerateContentUrl($modelKey);
         $payload = $this->buildChatPayload(
+            $modelKey,
             $contents,
             $requestedTools,
             $thinkingLevel,
@@ -205,6 +206,7 @@ class AssistantService
     }
 
     private function buildChatPayload(
+        string $modelKey,
         array $contents,
         array $requestedTools = [],
         ?string $thinkingLevel = null,
@@ -219,15 +221,40 @@ class AssistantService
             $payload['tools'] = $tools;
         }
 
-        $thinkingConfig = strtoupper($thinkingLevel);
+        $thinkingConfig = $this->buildThinkingConfig($modelKey, $thinkingLevel);
 
-        if ($thinkingConfig !== null) {
+        if ($thinkingConfig !== []) {
             $payload['generationConfig'] = [
                 'thinkingConfig' => $thinkingConfig,
             ];
         }
 
         return $payload;
+    }
+
+    private function buildThinkingConfig(
+        string $modelKey,
+        ?string $thinkingLevel = null,
+    ): array {
+        $normalizedThinkingLevel = is_string($thinkingLevel)
+            ? strtolower(trim($thinkingLevel))
+            : null;
+
+        if (
+            !is_string($normalizedThinkingLevel) ||
+            $normalizedThinkingLevel === '' ||
+            $normalizedThinkingLevel === 'default'
+        ) {
+            return [];
+        }
+
+        if (str_starts_with($modelKey, 'gemini-3')) {
+            return [
+                'thinkingLevel' => $normalizedThinkingLevel,
+            ];
+        }
+
+        return [];
     }
 
     private function buildToolsPayload(array $requestedTools): array
