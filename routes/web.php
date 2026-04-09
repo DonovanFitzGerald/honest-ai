@@ -14,30 +14,27 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
 
-Route::post('/chats', [ChatController::class, 'store'])
-    ->middleware(['auth', 'verified'])
-    ->name('chats.store');
+    Route::post('/chats', [ChatController::class, 'store'])
+        ->name('chats.store');
 
-Route::get('/chats/{chat}', [ChatController::class, 'show'])
-    ->middleware(['auth', 'verified'])
-    ->name('chats.show');
+    Route::get('/chats/{chat}', [ChatController::class, 'show'])
+        ->name('chats.show');
 
-Route::put('/chats/{chat}', [ChatController::class, 'update'])
-    ->middleware(['auth', 'verified'])
-    ->name('chats.update');
+    Route::put('/chats/{chat}', [ChatController::class, 'update'])
+        ->name('chats.update');
 
-Route::delete('/chats/{chat}', [ChatController::class, 'destroy'])
-    ->middleware(['auth', 'verified'])
-    ->name('chats.destroy');
+    Route::delete('/chats/{chat}', [ChatController::class, 'destroy'])
+        ->name('chats.destroy');
 
-Route::post('/chats/{chat}/messages', [MessageController::class, 'store'])
-    ->name('chats.messages.store');
+    Route::post('/chats/{chat}/messages', [MessageController::class, 'store'])
+        ->name('chats.messages.store');
 
-Route::post('/chats/{chat}/use-logs', [UseLogController::class, 'store'])
-    ->name('chats.use-logs.store');
+    Route::post('/chats/{chat}/use-logs', [UseLogController::class, 'store'])
+        ->name('chats.use-logs.store');
+});
 
 require __DIR__ . '/settings.php';

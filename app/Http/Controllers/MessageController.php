@@ -21,6 +21,10 @@ class MessageController extends Controller
         AssistantService $assistantService,
         AssistantModelRegistry $models,
     ) {
+        if ($response = $this->redirectIfChatIsInaccessible($request, $chat)) {
+            return $response;
+        }
+
         $requestedModel = $request->input('model');
         $effectiveModelKey = is_string($requestedModel) && $requestedModel !== ''
             ? $requestedModel

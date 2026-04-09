@@ -47,6 +47,7 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'sidebarChats' => fn() => $request->user()
                 ? \App\Models\Chat::query()
+                    ->ownedBy($request->user())
                     ->latest('updated_at')
                     ->limit(50)
                     ->get(['id', 'title', 'updated_at'])

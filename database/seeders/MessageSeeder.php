@@ -31,6 +31,7 @@ class MessageSeeder extends Seeder
                         ->user()
                         ->state([
                             'created_at' => $dateTime,
+                            'updated_at' => $dateTime,
                         ])
                         ->create();
                 }
@@ -42,6 +43,7 @@ class MessageSeeder extends Seeder
                         ->state([
                             'model' => $model?->value ?? null,
                             'created_at' => $dateTime,
+                            'updated_at' => $dateTime,
                         ])
                         ->create();
                 }

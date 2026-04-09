@@ -19,6 +19,10 @@ class UseLogController extends Controller
         AssistantModelRegistry $models,
     )
     {
+        if ($response = $this->redirectIfChatIsInaccessible($request, $chat)) {
+            return $response;
+        }
+
         $validated = $request->validate([
             'model' => ['sometimes', 'nullable', 'string', Rule::in($models->activeKeys())],
         ]);

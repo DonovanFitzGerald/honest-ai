@@ -16,7 +16,7 @@ class MessageControllerTest extends TestCase
     public function test_store_creates_messages_and_returns_json()
     {
         $user = User::factory()->create();
-        $chat = Chat::factory()->create();
+        $chat = Chat::factory()->for($user)->create();
 
         $this->mock(AssistantService::class, function (MockInterface $mock) {
             $mock->shouldReceive('call')->once()->andReturn([
@@ -59,6 +59,23 @@ class MessageControllerTest extends TestCase
             'content' => 'Hello from Assistant',
             'sequence' => 2,
             'model' => 'gemini-mock',
+        ]);
+    }
+
+    public function test_store_blocks_access_to_another_users_chat()
+    {
+        $user = User::factory()->create();
+        $chat = Chat::factory()->create();
+
+        $response = $this->actingAs($user)->postJson(route('chats.messages.store', $chat), [
+            'content' => 'Hello from user',
+        ]);
+
+        $response->assertForbidden();
+        $response->assertJsonPath('redirect', route('dashboard'));
+        $this->assertDatabaseMissing('messages', [
+            'chat_id' => $chat->id,
+            'content' => 'Hello from user',
         ]);
     }
 }

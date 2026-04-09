@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Chat extends Model
 {
@@ -11,15 +14,26 @@ class Chat extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'title',
     ];
 
-    public function messages()
+    public function scopeOwnedBy(Builder $query, User $user): Builder
+    {
+        return $query->where('user_id', $user->id);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function messages(): HasMany
     {
         return $this->hasMany(Message::class);
     }
 
-    public function useLogs()
+    public function useLogs(): HasMany
     {
         return $this->hasMany(UseLog::class);
     }

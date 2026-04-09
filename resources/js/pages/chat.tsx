@@ -145,11 +145,38 @@ export default function Show({
         scrollToBottom('instant');
     }, []);
 
+    const redirectToDashboardIfForbidden = async (
+        response: Response,
+    ): Promise<boolean> => {
+        if (response.status !== 403) {
+            return false;
+        }
+
+        try {
+            const payload = (await response.clone().json()) as {
+                redirect?: string;
+            };
+
+            if (typeof payload.redirect === 'string' && payload.redirect) {
+                window.location.assign(payload.redirect);
+                return true;
+            }
+        } catch {
+            // Ignore malformed error payloads and let the normal error path run.
+        }
+
+        return false;
+    };
+
     const parseErrorResponse = async (
         response: Response,
     ): Promise<string[]> => {
         const fallbackMessage =
             'We could not send your message. Please try again.';
+
+        if (await redirectToDashboardIfForbidden(response)) {
+            return [];
+        }
 
         if (response.status === 419) {
             return [
@@ -223,7 +250,13 @@ export default function Show({
                     body: JSON.stringify(model ? { model } : {}),
                 },
             );
+
+            if (await redirectToDashboardIfForbidden(response)) {
+                return;
+            }
+
             if (!response.ok) return;
+
             const data = await response.json();
             setUseLog(data.parsed);
         } catch (error) {

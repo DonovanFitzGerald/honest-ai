@@ -24,6 +24,7 @@ class ChatControllerTest extends TestCase
 
         $this->assertNotNull($chat);
         $this->assertEquals('New chat', $chat->title);
+        $this->assertSame($user->id, $chat->user_id);
         $response->assertStatus(303);
         $response->assertRedirect(route('chats.show', $chat));
     }
@@ -31,7 +32,7 @@ class ChatControllerTest extends TestCase
     public function test_show_renders_inertia_view_with_chat_messages_and_use_log()
     {
         $user = User::factory()->create();
-        $chat = Chat::factory()->create();
+        $chat = Chat::factory()->for($user)->create();
 
         Message::factory()->create(['chat_id' => $chat->id, 'sequence' => 1]);
         UseLog::factory()->create(['chat_id' => $chat->id]);
@@ -41,17 +42,28 @@ class ChatControllerTest extends TestCase
         $response->assertOk();
         $response->assertInertia(
             fn(Assert $page) => $page
-                ->component('chats/show')
+                ->component('chat')
                 ->has('chat')
                 ->has('messages', 1)
                 ->has('useLog')
         );
     }
 
-    public function test_destroy_deletes_chat()
+    public function test_show_redirects_when_chat_belongs_to_another_user()
     {
         $user = User::factory()->create();
         $chat = Chat::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('chats.show', $chat));
+
+        $response->assertStatus(303);
+        $response->assertRedirect(route('dashboard'));
+    }
+
+    public function test_destroy_deletes_chat()
+    {
+        $user = User::factory()->create();
+        $chat = Chat::factory()->for($user)->create();
 
         $response = $this->actingAs($user)->delete(route('chats.destroy', $chat));
 
