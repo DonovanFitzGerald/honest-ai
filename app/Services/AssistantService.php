@@ -11,8 +11,7 @@ class AssistantService
 {
     public function __construct(
         private readonly AssistantModelRegistry $models,
-    ) {
-    }
+    ) {}
 
     public function call(
         Chat $chat,

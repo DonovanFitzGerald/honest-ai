@@ -36,24 +36,6 @@ const featureCards = [
     },
 ];
 
-const overviewMetrics = [
-    {
-        label: 'Prompt activity',
-        value: 'Daily and long-term usage patterns',
-        tone: 'bg-[#EAF4FF] text-[#1D4ED8]',
-    },
-    {
-        label: 'Use logs',
-        value: 'Context for why and how AI was used',
-        tone: 'bg-[#FFF1F3] text-[#BE123C]',
-    },
-    {
-        label: 'Energy view',
-        value: 'Estimated environmental cost per workflow',
-        tone: 'bg-[#F2FBF4] text-[#047857]',
-    },
-];
-
 export default function Welcome({
     canRegister = true,
 }: {
