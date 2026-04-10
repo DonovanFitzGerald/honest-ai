@@ -67,15 +67,15 @@ export default function DailySnapshotReport({
                     </div>
                     <div>
                         <p className="text-xs tracking-[0.2em] text-white/60 uppercase">
-                            Total responses
+                            Total Tokens
                         </p>
                         <p className="mt-2 text-2xl font-semibold">
-                            {formatCount(responseStats.allTime)}
+                            {formatCount(tokenStats.allTime)}
                         </p>
                     </div>
                     <div>
                         <p className="text-xs tracking-[0.2em] text-white/60 uppercase">
-                            Logged cases
+                            Logged Cases
                         </p>
                         <p className="mt-2 text-2xl font-semibold">
                             {formatCount(cases.length)}

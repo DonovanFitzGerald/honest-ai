@@ -7,7 +7,7 @@ import {
     formatCompact,
     formatCount,
     makeBarData,
-    type PeakDay,
+    type DailyValue,
 } from '../chart-utils';
 
 export function PromptTrendCard({
@@ -16,8 +16,8 @@ export function PromptTrendCard({
     busiestTokenDay,
 }: {
     promptTrend: ChartSeries;
-    busiestPromptDay: PeakDay | null;
-    busiestTokenDay: PeakDay | null;
+    busiestPromptDay: DailyValue | null;
+    busiestTokenDay: DailyValue | null;
 }) {
     return (
         <section className="rounded-[28px] border border-sidebar-accent bg-white/70 p-6 shadow-sm">
