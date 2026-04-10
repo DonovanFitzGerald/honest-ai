@@ -209,7 +209,12 @@ export default function Dashboard() {
 
                     <div className="col-span-2">
                         <EnergyUsageCard
-                            assistantResponses={assistantResponses}
+                            tokens={assistantResponses.map((p) => {
+                                return {
+                                    tokens: p.tokens,
+                                    created_at: p.created_at,
+                                };
+                            })}
                         />
                     </div>
 
