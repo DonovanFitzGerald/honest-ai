@@ -18,7 +18,7 @@ export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
             />
             <path
                 d="M27.8118 0L24 69L60 51.537L27.8118 0Z"
-                fill="white"
+                fill="currentColor"
                 stroke={props.fill}
                 strokeWidth="1"
             />
@@ -31,7 +31,7 @@ export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
                     y2="59.8846"
                     gradientUnits="userSpaceOnUse"
                 >
-                    <stop stopColor="#D9D9D9" />
+                    <stop stopColor="currentColor" />
                     <stop offset="0.658654" stopColor={props.fill} />
                 </linearGradient>
             </defs>

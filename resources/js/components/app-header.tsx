@@ -90,7 +90,13 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 <SheetHeader className="flex justify-start text-left">
                                     <AppLogoIcon
                                         className="h-6 w-6 fill-current text-black dark:text-white"
-                                        fill="#000000"
+                                        fill={
+                                            document.documentElement.classList.contains(
+                                                'dark',
+                                            )
+                                                ? 'white'
+                                                : 'black'
+                                        }
                                     />
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">

@@ -20,7 +20,11 @@ export default function AuthSplitLayout({
                 >
                     <AppLogoIcon
                         className="mr-2 size-8 fill-current text-white"
-                        fill="#000000"
+                        fill={
+                            document.documentElement.classList.contains('dark')
+                                ? 'white'
+                                : 'black'
+                        }
                     />
                     {name}
                 </Link>
@@ -33,7 +37,13 @@ export default function AuthSplitLayout({
                     >
                         <AppLogoIcon
                             className="h-10 fill-current text-black sm:h-12"
-                            fill="#000000"
+                            fill={
+                                document.documentElement.classList.contains(
+                                    'dark',
+                                )
+                                    ? 'white'
+                                    : 'black'
+                            }
                         />
                     </Link>
                     <div className="flex flex-col items-start gap-2 text-left sm:items-center sm:text-center">
