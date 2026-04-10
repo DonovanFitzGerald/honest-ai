@@ -24,6 +24,8 @@ class MessageSeeder extends Seeder
                 fake()->dateTimeBetween('-14 days', 'now'),
             )->utc();
             $model = fake()->randomElement($assistantModels);
+            $modelKey = $model['value'];
+
 
             for ($i = 1; $i <= $messageCount; $i++) {
                 $isUser = $i % 2 !== 0;
@@ -44,7 +46,7 @@ class MessageSeeder extends Seeder
                         ->sequenceNumber($i)
                         ->assistant()
                         ->state([
-                            'model' => $model?->value ?? null,
+                            'model' => $modelKey,
                             'created_at' => $dateTime,
                             'updated_at' => $dateTime,
                         ])
