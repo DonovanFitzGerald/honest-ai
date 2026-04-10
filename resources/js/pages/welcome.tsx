@@ -110,7 +110,7 @@ export default function Welcome({
                         </nav>
                     </header>
 
-                    <main className="flex flex-1 items-center py-12 lg:py-16">
+                    <main className="flex flex-1 items-start py-12 lg:py-16">
                         <div className="grid w-full gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-12">
                             <section className="flex flex-col justify-center">
                                 <Badge
@@ -165,39 +165,6 @@ export default function Welcome({
                                         </Button>
                                     )}
                                 </div>
-
-                                <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                                    <Card className="border-border/70 bg-card/80 py-0 backdrop-blur">
-                                        <CardContent className="p-5">
-                                            <p className="text-sm text-muted-foreground">
-                                                Conversations
-                                            </p>
-                                            <p className="mt-2 text-lg font-semibold">
-                                                Centralised chat history
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                    <Card className="border-border/70 bg-card/80 py-0 backdrop-blur">
-                                        <CardContent className="p-5">
-                                            <p className="text-sm text-muted-foreground">
-                                                Reporting
-                                            </p>
-                                            <p className="mt-2 text-lg font-semibold">
-                                                Visual usage trends
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                    <Card className="border-border/70 bg-card/80 py-0 backdrop-blur">
-                                        <CardContent className="p-5">
-                                            <p className="text-sm text-muted-foreground">
-                                                Accountability
-                                            </p>
-                                            <p className="mt-2 text-lg font-semibold">
-                                                Structured AI reflection
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                </div>
                             </section>
 
                             <section className="flex items-center">
@@ -218,25 +185,7 @@ export default function Welcome({
                                             </div>
                                         </div>
 
-                                        <div className="grid gap-3">
-                                            {overviewMetrics.map((metric) => (
-                                                <div
-                                                    key={metric.label}
-                                                    className="flex items-start gap-4 rounded-2xl border border-border/70 p-4"
-                                                >
-                                                    <div
-                                                        className={`rounded-xl px-3 py-2 text-xs font-semibold ${metric.tone}`}
-                                                    >
-                                                        {metric.label}
-                                                    </div>
-                                                    <p className="text-sm leading-6 text-muted-foreground">
-                                                        {metric.value}
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="grid gap-4 sm:grid-cols-3">
+                                        <div className="grid gap-4 sm:grid-cols-1">
                                             {featureCards.map((feature) => {
                                                 const Icon = feature.icon;
 
