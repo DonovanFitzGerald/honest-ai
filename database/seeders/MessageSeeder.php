@@ -20,6 +20,7 @@ class MessageSeeder extends Seeder
 
         foreach ($chats as $chat) {
             $messageCount = fake()->numberBetween(4, 50);
+            $messageCount -= $messageCount % 2;
             $dateTime = CarbonImmutable::instance(
                 fake()->dateTimeBetween('-14 days', 'now'),
             )->utc();
