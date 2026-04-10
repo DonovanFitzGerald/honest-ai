@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Chat;
 use App\Models\Message;
 use App\Support\AssistantModelRegistry;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 
 class MessageSeeder extends Seeder
@@ -19,7 +20,9 @@ class MessageSeeder extends Seeder
 
         foreach ($chats as $chat) {
             $messageCount = fake()->numberBetween(4, 50);
-            $dateTime = fake()->dateTimeBetween('-30 days', 'now');
+            $dateTime = CarbonImmutable::instance(
+                fake()->dateTimeBetween('-14 days', 'now'),
+            )->utc();
             $model = fake()->randomElement($assistantModels);
 
             for ($i = 1; $i <= $messageCount; $i++) {
@@ -48,7 +51,9 @@ class MessageSeeder extends Seeder
                         ->create();
                 }
 
-                $dateTime->modify('+' . fake()->numberBetween(0, 20) . ' minutes');
+                $dateTime = $dateTime->addMinutes(
+                    fake()->numberBetween(0, 20),
+                );
             }
         }
     }

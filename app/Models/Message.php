@@ -20,6 +20,7 @@ class Message extends Model
         'sequence',
         'model',
         'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
