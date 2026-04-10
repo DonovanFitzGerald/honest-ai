@@ -1,6 +1,8 @@
 import { Head, usePage } from '@inertiajs/react';
 import { FileText, MessagesSquare, Sparkles, Zap } from 'lucide-react';
+import { Pie } from 'react-chartjs-2';
 import AppLayout from '@/layouts/app-layout';
+import { createHexGradientArray } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 import type { AssistantRole } from '@/types/assistant';
@@ -13,8 +15,11 @@ import {
     capitalizeLabel,
     buildDeltaLabel,
     topEntries,
+    makePieData,
+    pieChartOptions,
 } from './chart-utils';
 import DailySnapshotReport from './components/daily-snapshot-report';
+import EnergyUsageCard from './components/energy-usage-card';
 import { PromptTrendCard } from './components/prompt-trend-card';
 import { BreakdownCard } from './components/ui/breakdown-card';
 
@@ -136,12 +141,33 @@ export default function Dashboard() {
                     />
                 </div>
 
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+                <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                     <BreakdownCard
                         title="Top input type"
                         leadLabel={capitalizeLabel(
                             inputCounts.labels[0] ?? 'None',
                         )}
+                        chart={
+                            <Pie
+                                data={makePieData(
+                                    inputCounts.labels,
+                                    inputCounts.values,
+                                    createHexGradientArray(
+                                        '#A7F3D0',
+                                        '#10B981',
+                                        inputCounts.values.length,
+                                    ),
+                                )}
+                                options={{
+                                    ...pieChartOptions,
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                        },
+                                    },
+                                }}
+                            />
+                        }
                         leadValue={inputCounts.values[0] ?? 0}
                         entries={topEntries(
                             inputCounts.labels,
@@ -153,12 +179,40 @@ export default function Dashboard() {
                         leadLabel={capitalizeLabel(
                             outputCounts.labels[0] ?? 'None',
                         )}
+                        chart={
+                            <Pie
+                                data={makePieData(
+                                    outputCounts.labels,
+                                    outputCounts.values,
+                                    createHexGradientArray(
+                                        '#FDE68A',
+                                        '#F59E0B',
+                                        outputCounts.values.length,
+                                    ),
+                                )}
+                                options={{
+                                    ...pieChartOptions,
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                        },
+                                    },
+                                }}
+                            />
+                        }
                         leadValue={outputCounts.values[0] ?? 0}
                         entries={topEntries(
                             outputCounts.labels,
                             outputCounts.values,
                         )}
                     />
+
+                    <div className="col-span-2">
+                        <EnergyUsageCard
+                            assistantResponses={assistantResponses}
+                        />
+                    </div>
+
                     <BreakdownCard
                         title="Top assistant role"
                         leadLabel={capitalizeLabel(

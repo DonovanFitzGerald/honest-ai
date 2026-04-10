@@ -1,5 +1,29 @@
+import {
+    ArcElement,
+    BarElement,
+    CategoryScale,
+    Chart as ChartJS,
+    Filler,
+    Legend,
+    LineElement,
+    LinearScale,
+    PointElement,
+    Tooltip,
+} from 'chart.js';
 import type { ChartOptions } from 'chart.js';
 import type { ChartSeries, DayBucket } from '@/types/dashboard';
+
+ChartJS.register(
+    ArcElement,
+    BarElement,
+    CategoryScale,
+    Filler,
+    Legend,
+    LineElement,
+    LinearScale,
+    PointElement,
+    Tooltip,
+);
 
 export function sumSeries(series: ChartSeries): number {
     return series.values.reduce((a, b) => a + b, 0);

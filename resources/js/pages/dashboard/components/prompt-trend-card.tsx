@@ -1,17 +1,25 @@
 import { Activity } from 'lucide-react';
 import { Bar } from 'react-chartjs-2';
-import { formatCount, formatCompact, barChartOptions } from '../chart-utils';
-import { makeBarData } from '../chart-utils';
 import { createHexGradientArray } from '@/lib/utils';
-import type { DashboardPromptRow, AssistantResponse } from '@/types/dashboard';
-import { aggregatePerDay, getPeakDay } from '../chart-utils';
+import type {
+    DashboardAssistantResponseRow,
+    DashboardPromptRow,
+} from '@/types/dashboard';
+import {
+    aggregatePerDay,
+    barChartOptions,
+    formatCompact,
+    formatCount,
+    getPeakDay,
+    makeBarData,
+} from '../chart-utils';
 
 export function PromptTrendCard({
     prompts,
     assistantResponses,
 }: {
     prompts: DashboardPromptRow[];
-    assistantResponses: AssistantResponse[];
+    assistantResponses: DashboardAssistantResponseRow[];
 }) {
     const promptTrend = aggregatePerDay(
         prompts,
@@ -50,8 +58,8 @@ export function PromptTrendCard({
                     promptTrend.labels,
                     promptTrend.values,
                     createHexGradientArray(
-                        'rgba(16, 185, 129, 0.6)',
-                        'rgba(16, 185, 129, 1)',
+                        '#A7F3D0',
+                        '#10B981',
                         promptTrend.values.length,
                     ),
                 )}

@@ -5,11 +5,13 @@ export function BreakdownCard({
     leadLabel,
     leadValue,
     entries,
+    chart,
 }: {
     title: string;
     leadLabel: string;
     leadValue: number;
     entries: Array<{ label: string; value: number }>;
+    chart?: React.ReactNode;
 }) {
     return (
         <div className="rounded-2xl border border-sidebar-accent bg-white/70 p-5 shadow-sm">
@@ -25,6 +27,7 @@ export function BreakdownCard({
                 </p>
             </div>
             <div className="mt-5 space-y-3">
+                {chart}
                 {entries.length ? (
                     entries.map((entry) => (
                         <div

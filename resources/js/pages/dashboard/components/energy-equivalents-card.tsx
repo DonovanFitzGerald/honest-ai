@@ -1,5 +1,5 @@
 import { Cloud, Droplet, Search } from 'lucide-react';
-import type { WindowStats } from './chart-utils';
+import type { WindowStats } from '../chart-utils';
 
 const EnergyConversions = {
     wattHour: {

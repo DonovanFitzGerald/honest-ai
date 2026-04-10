@@ -1,8 +1,8 @@
 import type { ChartOptions } from 'chart.js';
 import { ArrowDown, ArrowUp, Zap } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
-import type { ChartSeries } from '@/types/dashboard';
-import type { WindowStats } from './chart-utils';
+import type { DashboardAssistantResponseRow } from '@/types/dashboard';
+import '../chart-utils';
 
 const tokensPerWattHour = 5000;
 const toKwh = (tokens: number) => tokens / tokensPerWattHour / 1000;
@@ -71,30 +71,42 @@ function EnergyStatRow({
     );
 }
 
-interface EnergyUsageCardProps {
-    tokensPerDay: ChartSeries;
-    stats?: WindowStats;
-}
-
 export default function EnergyUsageCard({
-    tokensPerDay,
-    stats,
-}: EnergyUsageCardProps) {
-    const dailyKwh = tokensPerDay.values.map(toKwh);
+    assistantResponses,
+}: {
+    assistantResponses: DashboardAssistantResponseRow[];
+}) {
+    const energyStats = {
+        totalKwh: assistantResponses.reduce(
+            (acc, p) => acc + toKwh(p.tokens),
+            0,
+        ),
+        dailyKwh: assistantResponses.map((p) => toKwh(p.tokens)),
+        last24h: assistantResponses.reduce(
+            (acc, p) => acc + toKwh(p.tokens),
+            0,
+        ),
+        last7d: assistantResponses.reduce((acc, p) => acc + toKwh(p.tokens), 0),
+        last365d: assistantResponses.reduce(
+            (acc, p) => acc + toKwh(p.tokens),
+            0,
+        ),
+        dailyAvg: assistantResponses.reduce(
+            (acc, p) => acc + toKwh(p.tokens),
+            0,
+        ),
+        daysSinceFirst: assistantResponses.reduce(
+            (acc, p) => acc + toKwh(p.tokens),
+            0,
+        ),
+    };
 
-    const cumulativeKwh = dailyKwh.reduce<number[]>((acc, v) => {
-        acc.push((acc[acc.length - 1] ?? 0) + v);
-        return acc;
-    }, []);
-
-    const totalKwh = cumulativeKwh[cumulativeKwh.length - 1] ?? 0;
-
-    const data = {
-        labels: tokensPerDay.labels,
+    const chartData = {
+        labels: energyStats.dailyKwh,
         datasets: [
             {
                 label: 'Cumulative',
-                data: cumulativeKwh,
+                data: energyStats.dailyKwh,
                 borderColor: '#F25858',
                 backgroundColor: '#F2585833',
                 borderWidth: 2,
@@ -104,7 +116,7 @@ export default function EnergyUsageCard({
             },
             {
                 label: 'Daily',
-                data: dailyKwh,
+                data: energyStats.dailyKwh,
                 borderColor: '#F258588A',
                 backgroundColor: 'transparent',
                 borderWidth: 1.5,
@@ -121,7 +133,9 @@ export default function EnergyUsageCard({
             <div className="mb-3 flex items-start justify-start gap-2 text-lg font-medium">
                 <div className="mt-3 flex flex-col items-start justify-center">
                     <div className="flex items-center gap-2">
-                        <p className="text-2xl font-bold">{fmtKwh(totalKwh)}</p>
+                        <p className="text-2xl font-bold">
+                            {fmtKwh(energyStats.totalKwh)}
+                        </p>
                         <Zap className="h-5 w-5" />
                     </div>
                     <p className="text-sm text-neutral-400">
@@ -129,29 +143,31 @@ export default function EnergyUsageCard({
                     </p>
                 </div>
             </div>
-            <Line data={data} options={options} />
-            {stats && (
+            <Line data={chartData} options={options} />
+            {energyStats && (
                 <div className="flex justify-evenly pt-3">
                     <EnergyStatRow
                         period="24h"
-                        actual={toKwh(stats.last24h)}
+                        actual={toKwh(energyStats.last24h)}
                         expected={toKwh(
-                            stats.dailyAvg * Math.min(1, stats.daysSinceFirst),
+                            energyStats.dailyAvg *
+                                Math.min(1, energyStats.daysSinceFirst),
                         )}
                     />
                     <EnergyStatRow
                         period="7d"
-                        actual={toKwh(stats.last7d)}
+                        actual={toKwh(energyStats.last7d)}
                         expected={toKwh(
-                            stats.dailyAvg * Math.min(7, stats.daysSinceFirst),
+                            energyStats.dailyAvg *
+                                Math.min(7, energyStats.daysSinceFirst),
                         )}
                     />
                     <EnergyStatRow
                         period="365d"
-                        actual={toKwh(stats.last365d)}
+                        actual={toKwh(energyStats.last365d)}
                         expected={toKwh(
-                            stats.dailyAvg *
-                                Math.min(365, stats.daysSinceFirst),
+                            energyStats.dailyAvg *
+                                Math.min(365, energyStats.daysSinceFirst),
                         )}
                     />
                 </div>
