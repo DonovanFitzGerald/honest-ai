@@ -75,7 +75,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="mr-2 h-[34px] w-[34px]"
+                                    className="mr-2 h-8.5 w-8.5"
                                 >
                                     <Menu className="h-5 w-5" />
                                 </Button>
@@ -89,13 +89,13 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 </SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
                                     <AppLogoIcon
-                                        className="h-6 w-6 fill-current text-black dark:text-white"
+                                        className="h-6 w-6 fill-current text-foreground"
                                         fill={
                                             document.documentElement.classList.contains(
                                                 'dark',
                                             )
-                                                ? 'white'
-                                                : 'black'
+                                                ? 'black'
+                                                : 'white'
                                         }
                                     />
                                 </SheetHeader>

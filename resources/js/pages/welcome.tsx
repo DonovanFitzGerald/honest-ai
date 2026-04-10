@@ -49,9 +49,9 @@ export default function Welcome({
             <Head title="Welcome" />
 
             <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-                <div className="absolute inset-x-0 top-0 -z-10 h-[28rem] bg-[radial-gradient(circle_at_top,_rgba(239,68,68,0.12),_transparent_55%)]" />
-                <div className="absolute right-[-8rem] bottom-[-10rem] -z-10 h-80 w-80 rounded-full bg-[rgba(37,99,235,0.08)] blur-3xl" />
-                <div className="absolute top-40 left-[-6rem] -z-10 h-72 w-72 rounded-full bg-[rgba(6,153,113,0.08)] blur-3xl" />
+                <div className="absolute inset-x-0 top-0 -z-10 h-112 bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.12),transparent_55%)]" />
+                <div className="absolute -right-32 -bottom-40 -z-10 h-80 w-80 rounded-full bg-linear-to-br from-blue-500/10 to-blue-500/80 blur-3xl" />
+                <div className="absolute top-40 -left-24 -z-10 h-72 w-72 rounded-full bg-linear-to-br from-green-500/10 to-green-500/80 blur-3xl" />
 
                 <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-6 lg:px-8">
                     <header className="flex items-center justify-between gap-4">
@@ -174,10 +174,10 @@ export default function Welcome({
                                                 return (
                                                     <div
                                                         key={feature.title}
-                                                        className="rounded-2xl border border-border/70 p-4"
+                                                        className="rounded-2xl border border-border p-4"
                                                     >
                                                         <div
-                                                            className={`inline-flex rounded-xl bg-gradient-to-br p-[1px] ${feature.accent}`}
+                                                            className={`inline-flex rounded-xl bg-linear-to-br p-px ${feature.accent}`}
                                                         >
                                                             <div className="rounded-[11px] bg-background p-3">
                                                                 <Icon className="size-4" />

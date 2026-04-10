@@ -244,21 +244,21 @@ function MetricCard({
     icon: React.ReactNode;
 }) {
     return (
-        <div className="rounded-2xl border border-sidebar-accent bg-white/70 p-5 shadow-sm">
+        <div className="rounded-2xl border border-sidebar-accent bg-card p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3">
                 <div>
-                    <p className="text-sm font-medium text-neutral-500">
+                    <p className="text-sm font-medium text-accent-foreground">
                         {title}
                     </p>
-                    <p className="mt-2 text-3xl font-semibold tracking-tight text-neutral-950">
+                    <p className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
                         {value}
                     </p>
                 </div>
-                <div className="rounded-full bg-neutral-950 p-2 text-white">
+                <div className="rounded-full bg-accent-foreground p-2 text-accent">
                     {icon}
                 </div>
             </div>
-            <p className="mt-3 text-sm text-neutral-500">{detail}</p>
+            <p className="mt-3 text-sm text-accent-foreground">{detail}</p>
         </div>
     );
 }

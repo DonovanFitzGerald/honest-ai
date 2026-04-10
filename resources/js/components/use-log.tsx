@@ -35,18 +35,18 @@ const UseCaseCard = ({
     index: number;
 }) => {
     return (
-        <div className="rounded-lg bg-white p-4 shadow-sm">
+        <div className="rounded-lg bg-accent p-4 shadow-sm">
             <div className="flex justify-between">
                 <h3 className="mb-2 text-lg font-semibold">{useCase.label}</h3>
                 <h3 className="text-neutral-400">{index + 1}</h3>
             </div>
-            <div className="flex flex-col gap-2 text-sm text-neutral-600">
+            <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                 <p>{useCase.evidence}</p>
                 <p className="text-neutral-400">
                     <span className="font-medium">Assistant Role:</span>
                     {useCase.assistant_role}
                 </p>
-                <div className="grid grid-cols-3 pt-2 text-xs text-neutral-400 uppercase">
+                <div className="grid grid-cols-3 pt-2 text-xs text-muted-foreground uppercase">
                     <div>
                         {useCase.input_type.map((t, i) => {
                             return (

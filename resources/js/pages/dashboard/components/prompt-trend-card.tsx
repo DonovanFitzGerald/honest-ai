@@ -20,13 +20,13 @@ export function PromptTrendCard({
     busiestTokenDay: DailyValue | null;
 }) {
     return (
-        <section className="rounded-[28px] border border-sidebar-accent bg-white/70 p-6 shadow-sm">
+        <section className="rounded-[28px] border border-sidebar-accent bg-card p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3">
                 <div>
-                    <p className="text-sm font-medium tracking-[0.2em] text-neutral-400 uppercase">
+                    <p className="text-sm font-medium tracking-[0.2em] text-muted-foreground uppercase">
                         Prompt Trend
                     </p>
-                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950">
+                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
                         Last 7 days
                     </h2>
                 </div>
@@ -48,21 +48,21 @@ export function PromptTrendCard({
                 options={barChartOptions}
             />
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl bg-neutral-50 p-4">
-                    <p className="text-xs tracking-[0.2em] text-neutral-400 uppercase">
+                <div className="rounded-2xl bg-card p-4">
+                    <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">
                         Busiest prompt day
                     </p>
-                    <p className="mt-2 text-lg font-semibold text-neutral-950">
+                    <p className="mt-2 text-lg font-semibold text-foreground">
                         {busiestPromptDay
                             ? `${busiestPromptDay.label} (${formatCount(busiestPromptDay.value)})`
                             : 'No prompt data yet'}
                     </p>
                 </div>
-                <div className="rounded-2xl bg-neutral-50 p-4">
-                    <p className="text-xs tracking-[0.2em] text-neutral-400 uppercase">
+                <div className="rounded-2xl bg-card p-4">
+                    <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">
                         Heaviest token day
                     </p>
-                    <p className="mt-2 text-lg font-semibold text-neutral-950">
+                    <p className="mt-2 text-lg font-semibold text-foreground">
                         {busiestTokenDay
                             ? `${busiestTokenDay.label} (${formatCompact(busiestTokenDay.value)})`
                             : 'No token data yet'}

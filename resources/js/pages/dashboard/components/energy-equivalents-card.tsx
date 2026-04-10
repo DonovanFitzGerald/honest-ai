@@ -56,19 +56,19 @@ export default function EnergyEquivalentsCard({
     return (
         <section className="overflow-hidden rounded-[28px] border border-sidebar-accent shadow-sm">
             <div className="border-b border-sidebar-accent/70 px-6 py-5">
-                <p className="text-xs font-medium tracking-[0.22em] text-neutral-500 uppercase">
+                <p className="text-xs font-medium tracking-[0.22em] text-muted-foreground uppercase">
                     Energy Equivalents
                 </p>
                 <div className="mt-3 flex items-end justify-between gap-4">
                     <div>
-                        <p className="text-3xl font-semibold tracking-tight text-neutral-950">
+                        <p className="text-3xl font-semibold tracking-tight text-foreground">
                             {formatKillaMetric(wattHours / 1000, 'Wh', 'kWh')}
                         </p>
-                        <p className="mt-1 text-sm text-neutral-500">
+                        <p className="mt-1 text-sm text-muted-foreground">
                             Energy calculated by cumulative assistant responses
                         </p>
                     </div>
-                    <div className="rounded-full bg-neutral-950 px-3 py-1 text-xs font-medium tracking-[0.16em] text-white uppercase">
+                    <div className="rounded-full bg-accent-foreground px-3 py-1 text-xs font-medium tracking-[0.16em] text-accent uppercase">
                         Approximate
                     </div>
                 </div>
@@ -87,8 +87,8 @@ export default function EnergyEquivalentsCard({
                 ))}
             </div>
 
-            <div className="border-t border-sidebar-accent/70 bg-white/60 px-6 py-4">
-                <p className="text-sm leading-6 text-neutral-500">
+            <div className="border-t border-sidebar-accent/70 bg-card px-6 py-4">
+                <p className="text-sm leading-6 text-muted-foreground">
                     These comparisons are directional rather than exact. Model,
                     infrastructure, and datacenter overhead can push the true
                     footprint higher.
@@ -112,10 +112,10 @@ function EnergyMetricDisplayCard({
     icon: React.ReactNode;
 }) {
     return (
-        <div className="rounded-2xl border border-sidebar-accent bg-white/85 p-4">
+        <div className="rounded-2xl border border-sidebar-accent bg-card p-4">
             <div className="flex items-start justify-between gap-3">
                 <div>
-                    <p className="text-sm font-medium text-neutral-500">
+                    <p className="text-sm font-medium text-accent-foreground">
                         {title}
                     </p>
                 </div>
@@ -126,10 +126,12 @@ function EnergyMetricDisplayCard({
                 </div>
             </div>
             <div className="mt-3 flex items-end gap-2">
-                <p className="text-2xl font-semibold tracking-tight text-neutral-950">
+                <p className="text-2xl font-semibold tracking-tight text-foreground">
                     {value}
                 </p>
-                <span className="pb-1 text-sm text-neutral-500">{unit}</span>
+                <span className="pb-1 text-sm text-accent-foreground">
+                    {unit}
+                </span>
             </div>
         </div>
     );

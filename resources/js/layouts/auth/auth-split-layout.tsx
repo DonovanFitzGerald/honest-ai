@@ -19,11 +19,11 @@ export default function AuthSplitLayout({
                     className="relative z-20 flex items-center text-lg font-medium"
                 >
                     <AppLogoIcon
-                        className="mr-2 size-8 fill-current text-white"
+                        className="mr-2 size-8 fill-current text-foreground"
                         fill={
                             document.documentElement.classList.contains('dark')
-                                ? 'white'
-                                : 'black'
+                                ? 'black'
+                                : 'white'
                         }
                     />
                     {name}
@@ -36,13 +36,13 @@ export default function AuthSplitLayout({
                         className="relative z-20 flex items-center justify-center lg:hidden"
                     >
                         <AppLogoIcon
-                            className="h-10 fill-current text-black sm:h-12"
+                            className="h-10 fill-current text-foreground sm:h-12"
                             fill={
                                 document.documentElement.classList.contains(
                                     'dark',
                                 )
-                                    ? 'white'
-                                    : 'black'
+                                    ? 'black'
+                                    : 'white'
                             }
                         />
                     </Link>

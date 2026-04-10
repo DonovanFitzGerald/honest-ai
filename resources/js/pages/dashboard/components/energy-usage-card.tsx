@@ -65,19 +65,19 @@ export default function EnergyUsageCard({
     return (
         <div className="rounded-xl border border-sidebar-accent p-6 shadow-sm">
             <div className="flex flex-col items-start justify-start gap-2 text-lg font-medium">
-                <p className="text-xs font-medium tracking-[0.22em] text-neutral-500 uppercase">
+                <p className="text-xs font-medium tracking-[0.22em] text-muted-foreground uppercase">
                     Energy Usage
                 </p>
                 <div className="mt-3 flex items-end justify-between gap-4">
                     <div>
-                        <p className="text-3xl font-semibold tracking-tight text-neutral-950">
+                        <p className="text-3xl font-semibold tracking-tight text-foreground">
                             {formatKillaMetric(
                                 energyStats.totalKwh,
                                 'Wh',
                                 'kWh',
                             )}
                         </p>
-                        <p className="text-sm font-light text-neutral-500">
+                        <p className="text-sm font-light text-muted-foreground">
                             cumulative over period
                         </p>
                     </div>
@@ -130,12 +130,12 @@ function EnergyStatRow({
 
     return (
         <div className="flex flex-col items-center justify-center">
-            <span className="text-neutral-400">{period}</span>
+            <span className="text-muted-foreground">{period}</span>
             <span className="text-lg font-medium">
                 {formatKillaMetric(actual, 'Wh', 'kWh')}
             </span>
             <div className="flex items-center gap-1">
-                <span className="text-sm">
+                <span className="text-sm text-muted-foreground">
                     {sign}
                     {Math.round(Math.abs(deltaPercent))}%
                 </span>

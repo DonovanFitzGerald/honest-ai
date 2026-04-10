@@ -18,8 +18,8 @@ export default function ChatMessage({ message }: { message: Message }) {
             <div
                 className={cn(
                     'w-full rounded-3xl',
-                    isUser && 'max-w-[70%] bg-neutral-100 px-6 py-3 text-black',
-                    !isUser && !isAssistant && 'bg-neutral-200 text-black',
+                    isUser && 'max-w-[70%] bg-accent px-6 py-3 text-foreground',
+                    !isUser && !isAssistant && 'bg-accent text-foreground',
                 )}
                 data-slot="message "
             >

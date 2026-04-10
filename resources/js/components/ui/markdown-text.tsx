@@ -30,7 +30,7 @@ function CopyableCodeBlock({
     return (
         <div className="relative">
             <pre
-                className="max-h-96 overflow-auto rounded-lg bg-neutral-100 p-4"
+                className="max-h-96 overflow-auto rounded-lg bg-muted p-4"
                 {...props}
             >
                 {children}
@@ -81,11 +81,11 @@ export default function MarkdownText({ content }: { content: string }) {
                     blockquote: (props) => (
                         <blockquote
                             {...props}
-                            className="mb-2 border-l-4 border-gray-300 pl-4 italic"
+                            className="mb-2 border-l-4 border-sidebar-accent pl-4 italic"
                         />
                     ),
                     hr: (props) => (
-                        <hr {...props} className="my-4 border-gray-300" />
+                        <hr {...props} className="my-4 border-sidebar-accent" />
                     ),
                     table: (props) => (
                         <table
@@ -96,28 +96,31 @@ export default function MarkdownText({ content }: { content: string }) {
                     thead: (props) => (
                         <thead
                             {...props}
-                            className="border-b border-gray-300"
+                            className="border-b border-sidebar-accent"
                         />
                     ),
                     tbody: (props) => (
                         <tbody
                             {...props}
-                            className="border-b border-gray-300"
+                            className="border-b border-sidebar-accent"
                         />
                     ),
                     tr: (props) => (
-                        <tr {...props} className="border-b border-gray-300" />
+                        <tr
+                            {...props}
+                            className="border-b border-sidebar-accent"
+                        />
                     ),
                     th: (props) => (
                         <th
                             {...props}
-                            className="border border-gray-300 px-4 py-2 text-left font-bold"
+                            className="border border-sidebar-accent px-4 py-2 text-left font-bold"
                         />
                     ),
                     td: (props) => (
                         <td
                             {...props}
-                            className="border border-gray-300 px-4 py-2"
+                            className="border border-sidebar-accent px-4 py-2"
                         />
                     ),
                     strong: (props) => (
@@ -139,7 +142,7 @@ export default function MarkdownText({ content }: { content: string }) {
                     code: ({ className, children, ...props }) => (
                         <code
                             {...props}
-                            className={`rounded bg-accent px-1 py-0.5 ${className ?? ''}`}
+                            className={`rounded bg-muted px-1 py-0.5 ${className ?? ''}`}
                         >
                             {children}
                         </code>

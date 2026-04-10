@@ -28,13 +28,13 @@ export default function AuthCardLayout({
                 >
                     <div className="flex h-9 w-9 items-center justify-center">
                         <AppLogoIcon
-                            className="size-9 fill-current text-black dark:text-white"
+                            className="size-9 fill-current text-foreground"
                             fill={
                                 document.documentElement.classList.contains(
                                     'dark',
                                 )
-                                    ? 'white'
-                                    : 'black'
+                                    ? 'black'
+                                    : 'white'
                             }
                         />
                     </div>

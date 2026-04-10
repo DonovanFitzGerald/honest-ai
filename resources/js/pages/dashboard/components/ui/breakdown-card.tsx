@@ -26,21 +26,21 @@ export function BreakdownCard({
     colorTo?: string;
 }) {
     return (
-        <div className="rounded-2xl border border-sidebar-accent bg-white/70 p-5 shadow-sm">
+        <div className="rounded-2xl border border-sidebar-accent bg-card p-5 shadow-sm">
             <p className="text-sm font-medium tracking-[0.2em] text-neutral-400 uppercase">
                 {title}
             </p>
             <div className="mt-4">
-                <p className="text-2xl font-semibold text-neutral-950">
+                <p className="text-2xl font-semibold text-accent-foreground">
                     {leadLabel}
                 </p>
-                <p className="mt-1 text-sm text-neutral-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                     Leads with {formatCount(leadValue)} logged uses
                 </p>
             </div>
             <div className="mt-5 space-y-3">
                 {series && series.values.length > 0 && colorFrom && colorTo ? (
-                    <div className="mx-auto max-w-[220px]">
+                    <div className="mx-auto max-w-55">
                         <Pie
                             data={makePieData(
                                 series.labels,
@@ -68,16 +68,16 @@ export function BreakdownCard({
                             key={`${title}-${entry.label}`}
                             className="flex items-center justify-between gap-3 text-sm"
                         >
-                            <span className="text-neutral-600">
+                            <span className="text-muted-foreground">
                                 {capitalizeLabel(entry.label)}
                             </span>
-                            <span className="font-medium text-neutral-950">
+                            <span className="font-medium text-muted-foreground">
                                 {formatCount(entry.value)}
                             </span>
                         </div>
                     ))
                 ) : (
-                    <p className="text-sm text-neutral-500">
+                    <p className="text-sm text-muted-foreground">
                         No data logged yet.
                     </p>
                 )}
