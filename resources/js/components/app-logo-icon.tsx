@@ -13,8 +13,15 @@ export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
             <path
                 d="M27.6596 0L0 42.1157L60 52L27.6596 0Z"
                 fill="url(#paint0_linear_125_673)"
+                stroke={props.fill}
+                strokeWidth="1"
             />
-            <path d="M27.8118 0L24 69L60 51.537L27.8118 0Z" fill="white" />
+            <path
+                d="M27.8118 0L24 69L60 51.537L27.8118 0Z"
+                fill="white"
+                stroke={props.fill}
+                strokeWidth="1"
+            />
             <defs>
                 <linearGradient
                     id="paint0_linear_125_673"
