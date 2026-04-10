@@ -14,7 +14,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { isCurrentUrl } = useCurrentUrl();
 
     return (
-        <SidebarGroup className="border-b border-sidebar-border px-2 pt-0 pb-2">
+        <SidebarGroup className="gap-2 border-b border-sidebar-border px-2 pt-0 pb-2">
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => (

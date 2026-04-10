@@ -59,7 +59,7 @@ export function ChatSidebarItem({
     };
 
     return (
-        <SidebarMenuItem key={chat.id}>
+        <SidebarMenuItem key={chat.id} className="hover:bg-sidebar-accent">
             <div
                 className={cn(
                     'peer/menu-button group/chat flex w-full items-center gap-0 overflow-hidden rounded-md px-2 py-1.5 text-sm has-data-[state=open]:bg-sidebar-accent',
