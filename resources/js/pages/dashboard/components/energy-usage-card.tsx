@@ -64,21 +64,23 @@ export default function EnergyUsageCard({
 
     return (
         <div className="rounded-xl border border-sidebar-accent p-6 shadow-sm">
-            <div className="mb-3 flex items-start justify-start gap-2 text-lg font-medium">
-                <div className="mt-3 flex flex-col items-start justify-center">
-                    <div className="flex items-center gap-2">
-                        <p className="text-2xl font-bold">
+            <div className="flex flex-col items-start justify-start gap-2 text-lg font-medium">
+                <p className="text-xs font-medium tracking-[0.22em] text-neutral-500 uppercase">
+                    Energy Usage
+                </p>
+                <div className="mt-3 flex items-end justify-between gap-4">
+                    <div>
+                        <p className="text-3xl font-semibold tracking-tight text-neutral-950">
                             {formatKillaMetric(
                                 energyStats.totalKwh,
                                 'Wh',
                                 'kWh',
                             )}
                         </p>
-                        <Zap className="h-5 w-5" />
+                        <p className="text-sm font-light text-neutral-500">
+                            cumulative over period
+                        </p>
                     </div>
-                    <p className="text-sm text-neutral-400">
-                        cumulative over period
-                    </p>
                 </div>
             </div>
             <Line data={chartData} options={options} />
@@ -143,9 +145,6 @@ function EnergyStatRow({
                     <ArrowDown className="h-4 w-4 text-green-500" />
                 )}
             </div>
-            <span className="text-sm text-neutral-400">
-                avg {formatKillaMetric(expected, 'Wh', 'kWh')}
-            </span>
         </div>
     );
 }
