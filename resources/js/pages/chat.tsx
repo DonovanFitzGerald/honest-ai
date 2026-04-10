@@ -46,7 +46,9 @@ const getSelectedModel = (
     return latestAssistantModel ?? assistantModels.default;
 };
 
-const getDefaultThinkingLevel = (thinkingLevelOptions: string[]): ThinkingLevel =>
+const getDefaultThinkingLevel = (
+    thinkingLevelOptions: string[],
+): ThinkingLevel =>
     thinkingLevelOptions[thinkingLevelOptions.length - 1] ?? null;
 
 export default function Show({
@@ -122,12 +124,7 @@ export default function Show({
         setThinkingLevel(getDefaultThinkingLevel(nextThinkingLevelOptions));
         setSelectedTools([]);
         setSending(false);
-    }, [
-        assistantModels,
-        chat.id,
-        initialMessages,
-        initialUseLog,
-    ]);
+    }, [assistantModels, chat.id, initialMessages, initialUseLog]);
 
     useEffect(() => {
         setSelectedTools((prev) =>
@@ -559,7 +556,7 @@ export default function Show({
                                 )}
                                 <Button
                                     type="button"
-                                    className="flex aspect-square h-10 w-10 cursor-pointer justify-center rounded-full bg-primary text-primary-foreground"
+                                    className="flex aspect-square h-10 w-10 cursor-pointer justify-center rounded-full bg-foreground text-primary-foreground hover:bg-foreground/80"
                                     onClick={() => handleInputSubmit(inputText)}
                                     disabled={sending}
                                 >
