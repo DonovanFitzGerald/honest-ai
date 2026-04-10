@@ -1,7 +1,7 @@
 import { Pie } from 'react-chartjs-2';
 import { createHexGradientArray } from '@/lib/utils';
 import type { ChartSeries } from '@/types/dashboard';
-import { makePieData, pieChartOptions } from './chart-utils';
+import { makePieData, pieChartOptions } from '../../chart-utils';
 
 export default function PieChartCard({
     title,

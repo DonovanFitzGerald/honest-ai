@@ -237,3 +237,59 @@ export const lineChartOptions: ChartOptions<'line'> = {
         },
     },
 };
+
+export function formatCount(value: number) {
+    return Math.round(value).toLocaleString();
+}
+
+export function formatCompact(value: number) {
+    return new Intl.NumberFormat(undefined, {
+        notation: 'compact',
+        maximumFractionDigits: 1,
+    }).format(value);
+}
+
+export function formatPercent(value: number) {
+    return `${Math.round(value)}%`;
+}
+
+export function capitalizeLabel(value: string) {
+    return value ? value.charAt(0).toUpperCase() + value.slice(1) : 'None';
+}
+
+export function buildDeltaLabel(current: number, baseline: number) {
+    if (baseline <= 0) return 'No baseline yet';
+
+    const delta = ((current - baseline) / baseline) * 100;
+
+    if (Math.abs(delta) < 1) {
+        return 'In line with usual daily pace';
+    }
+
+    return `${formatPercent(Math.abs(delta))} ${
+        delta > 0 ? 'above' : 'below'
+    } usual daily pace`;
+}
+
+export function topEntries(labels: string[], values: number[], limit = 3) {
+    return labels.slice(0, limit).map((label, index) => ({
+        label,
+        value: values[index] ?? 0,
+    }));
+}
+
+export function getPeakDay(labels: string[], values: number[]) {
+    if (!values.length) return null;
+
+    let maxIndex = 0;
+    for (let index = 1; index < values.length; index += 1) {
+        if (values[index] > values[maxIndex]) {
+            maxIndex = index;
+        }
+    }
+
+    return {
+        label: labels[maxIndex],
+        value: values[maxIndex] ?? 0,
+    };
+}

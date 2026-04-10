@@ -2,8 +2,8 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 import { Bar } from 'react-chartjs-2';
 import { createHexGradientArray } from '@/lib/utils';
 import type { ChartSeries } from '@/types/dashboard';
-import { makeBarData, barChartOptions, sumSeries } from './chart-utils';
-import type { WindowStats } from './chart-utils';
+import { makeBarData, barChartOptions, sumSeries } from '../../chart-utils';
+import type { WindowStats } from '../../chart-utils';
 
 function StatRow({
     period,
