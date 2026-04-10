@@ -1,5 +1,5 @@
 import { Cloud, Droplet, Search } from 'lucide-react';
-import type { WindowStats } from '../chart-utils';
+import { formatKillaMetric, tokensToWattHours } from '../chart-utils';
 
 const EnergyConversions = {
     wattHour: {
@@ -11,12 +11,11 @@ const EnergyConversions = {
 };
 
 export default function EnergyEquivalentsCard({
-    stats,
+    totalTokens,
 }: {
-    stats: WindowStats;
+    totalTokens: number;
 }) {
-    const totalTokens = stats.allTime;
-    const energyCost = totalTokens / EnergyConversions.wattHour.tokens;
+    const energyCost = tokensToWattHours(totalTokens);
     const googleSearches = energyCost * EnergyConversions.wattHour.googleSearch;
     const water = energyCost * EnergyConversions.wattHour.water;
     const co2 = energyCost * EnergyConversions.wattHour.co2;
@@ -54,12 +53,10 @@ export default function EnergyEquivalentsCard({
     ];
 
     return (
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-sidebar-accent p-6">
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-sidebar-accent p-6 shadow-sm">
             <div className="flex flex-col items-center">
                 <p className="font-medium">
-                    {energyCost > 1000
-                        ? `${(energyCost * 1000).toFixed(0)} kWh`
-                        : `${energyCost.toFixed(2)} Wh`}
+                    {formatKillaMetric(energyCost / 1000, 'Wh', 'kWh')}
                 </p>
                 <p className="text-sm text-neutral-400">is equivalent to...</p>
             </div>

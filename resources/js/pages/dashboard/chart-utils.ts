@@ -11,7 +11,11 @@ import {
     Tooltip,
 } from 'chart.js';
 import type { ChartOptions } from 'chart.js';
-import type { ChartSeries, DayBucket } from '@/types/dashboard';
+import type {
+    ChartSeries,
+    DashboardAssistantResponseRow,
+    DayBucket,
+} from '@/types/dashboard';
 
 ChartJS.register(
     ArcElement,
@@ -37,6 +41,25 @@ export type WindowStats = {
     allTime: number;
     daysSinceFirst: number;
 };
+
+export type DailyValue = {
+    label: string;
+    value: number;
+};
+
+export type EnergyUsageStats = {
+    totalTokens: number;
+    totalKwh: number;
+    dailyKwh: ChartSeries;
+    dailyKwhCumulative: ChartSeries;
+    last24h: number;
+    last7d: number;
+    last365d: number;
+    dailyAvg: number;
+    daysSinceFirst: number;
+};
+
+export const TOKENS_PER_WATT_HOUR = 5000;
 
 export function computeWindowStats<T>(
     rows: T[],
@@ -217,6 +240,64 @@ export function makeBarData(
     };
 }
 
+export function tokensToWattHours(tokens: number) {
+    return tokens / TOKENS_PER_WATT_HOUR;
+}
+
+export function tokensToKwh(tokens: number) {
+    return tokensToWattHours(tokens) / 1000;
+}
+
+export function formatKillaMetric(
+    number: number,
+    smallUnit: string,
+    largeUnit: string,
+) {
+    return number >= 1
+        ? `${number.toFixed(2)} ${largeUnit}`
+        : `${(number * 1000).toFixed(2)} ${smallUnit}`;
+}
+
+export function buildCumulativeSeries(series: ChartSeries): ChartSeries {
+    return {
+        labels: series.labels,
+        values: series.values.reduce<number[]>((acc, value) => {
+            acc.push((acc[acc.length - 1] ?? 0) + value);
+            return acc;
+        }, []),
+    };
+}
+
+export function buildEnergyUsageStats(
+    rows: DashboardAssistantResponseRow[],
+    days = 7,
+): EnergyUsageStats {
+    const tokenStats = computeWindowStats(
+        rows,
+        (row) => row.created_at,
+        (row) => Number(row.tokens ?? 0),
+    );
+
+    const dailyKwh = aggregatePerDay(
+        rows,
+        (row) => row.created_at,
+        (row) => tokensToKwh(Number(row.tokens ?? 0)),
+        days,
+    );
+
+    return {
+        totalTokens: tokenStats.allTime,
+        totalKwh: tokensToKwh(tokenStats.allTime),
+        dailyKwh,
+        dailyKwhCumulative: buildCumulativeSeries(dailyKwh),
+        last24h: tokensToKwh(tokenStats.last24h),
+        last7d: tokensToKwh(tokenStats.last7d),
+        last365d: tokensToKwh(tokenStats.last365d),
+        dailyAvg: tokensToKwh(tokenStats.dailyAvg),
+        daysSinceFirst: tokenStats.daysSinceFirst,
+    };
+}
+
 export const barChartOptions = {
     responsive: true,
     interaction: {
@@ -302,7 +383,10 @@ export function topEntries(labels: string[], values: number[], limit = 3) {
     }));
 }
 
-export function getPeakDay(labels: string[], values: number[]) {
+export function getPeakDay(
+    labels: string[],
+    values: number[],
+): DailyValue | null {
     if (!values.length) return null;
 
     let maxIndex = 0;

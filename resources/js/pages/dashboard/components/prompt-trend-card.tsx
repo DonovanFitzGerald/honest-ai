@@ -1,42 +1,24 @@
 import { Activity } from 'lucide-react';
 import { Bar } from 'react-chartjs-2';
 import { createHexGradientArray } from '@/lib/utils';
-import type {
-    DashboardAssistantResponseRow,
-    DashboardPromptRow,
-} from '@/types/dashboard';
+import type { ChartSeries } from '@/types/dashboard';
 import {
-    aggregatePerDay,
     barChartOptions,
     formatCompact,
     formatCount,
-    getPeakDay,
     makeBarData,
+    type PeakDay,
 } from '../chart-utils';
 
 export function PromptTrendCard({
-    prompts,
-    assistantResponses,
+    promptTrend,
+    busiestPromptDay,
+    busiestTokenDay,
 }: {
-    prompts: DashboardPromptRow[];
-    assistantResponses: DashboardAssistantResponseRow[];
+    promptTrend: ChartSeries;
+    busiestPromptDay: PeakDay | null;
+    busiestTokenDay: PeakDay | null;
 }) {
-    const promptTrend = aggregatePerDay(
-        prompts,
-        (prompt) => prompt.created_at,
-        () => 1,
-        7,
-    );
-    const tokenTrend = aggregatePerDay(
-        assistantResponses,
-        (response) => response.created_at,
-        (response) => Number(response.tokens ?? 0),
-        14,
-    );
-
-    const busiestPromptDay = getPeakDay(promptTrend.labels, promptTrend.values);
-    const busiestTokenDay = getPeakDay(tokenTrend.labels, tokenTrend.values);
-
     return (
         <section className="rounded-[28px] border border-sidebar-accent bg-white/70 p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3">

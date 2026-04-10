@@ -1,24 +1,24 @@
 import { Head, usePage } from '@inertiajs/react';
 import { FileText, MessagesSquare, Sparkles, Zap } from 'lucide-react';
-import { Pie } from 'react-chartjs-2';
 import AppLayout from '@/layouts/app-layout';
-import { createHexGradientArray } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 import type { AssistantRole } from '@/types/assistant';
 import type { DashboardProps } from '@/types/dashboard';
 import {
+    aggregatePerDay,
+    buildDeltaLabel,
+    buildEnergyUsageStats,
+    capitalizeLabel,
     computeWindowStats,
     countValues,
-    formatCount,
     formatCompact,
-    capitalizeLabel,
-    buildDeltaLabel,
+    formatCount,
+    getPeakDay,
     topEntries,
-    makePieData,
-    pieChartOptions,
 } from './chart-utils';
 import DailySnapshotReport from './components/daily-snapshot-report';
+import EnergyEquivalentsCard from './components/energy-equivalents-card';
 import EnergyUsageCard from './components/energy-usage-card';
 import { PromptTrendCard } from './components/prompt-trend-card';
 import { BreakdownCard } from './components/ui/breakdown-card';
@@ -66,6 +66,20 @@ export default function Dashboard() {
         (response) => Number(response.tokens ?? 0),
     );
 
+    const promptTrend = aggregatePerDay(
+        prompts,
+        (prompt) => prompt.created_at,
+        () => 1,
+        7,
+    );
+    const tokenTrend = aggregatePerDay(
+        assistantResponses,
+        (response) => response.created_at,
+        (response) => Number(response.tokens ?? 0),
+        14,
+    );
+    const energyUsageStats = buildEnergyUsageStats(assistantResponses, 7);
+
     const avgTokensPerResponse =
         responseStats.last24h > 0
             ? tokenStats.last24h / responseStats.last24h
@@ -96,8 +110,15 @@ export default function Dashboard() {
                         responseStats={responseStats}
                     />
                     <PromptTrendCard
-                        prompts={prompts}
-                        assistantResponses={assistantResponses}
+                        promptTrend={promptTrend}
+                        busiestPromptDay={getPeakDay(
+                            promptTrend.labels,
+                            promptTrend.values,
+                        )}
+                        busiestTokenDay={getPeakDay(
+                            tokenTrend.labels,
+                            tokenTrend.values,
+                        )}
                     />
                 </div>
 
@@ -141,103 +162,70 @@ export default function Dashboard() {
                     />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-                    <BreakdownCard
-                        title="Top input type"
-                        leadLabel={capitalizeLabel(
-                            inputCounts.labels[0] ?? 'None',
-                        )}
-                        chart={
-                            <Pie
-                                data={makePieData(
-                                    inputCounts.labels,
-                                    inputCounts.values,
-                                    createHexGradientArray(
-                                        '#A7F3D0',
-                                        '#10B981',
-                                        inputCounts.values.length,
-                                    ),
-                                )}
-                                options={{
-                                    ...pieChartOptions,
-                                    plugins: {
-                                        legend: {
-                                            display: false,
-                                        },
-                                    },
-                                }}
-                            />
-                        }
-                        leadValue={inputCounts.values[0] ?? 0}
-                        entries={topEntries(
-                            inputCounts.labels,
-                            inputCounts.values,
-                        )}
-                    />
-                    <BreakdownCard
-                        title="Top output type"
-                        leadLabel={capitalizeLabel(
-                            outputCounts.labels[0] ?? 'None',
-                        )}
-                        chart={
-                            <Pie
-                                data={makePieData(
-                                    outputCounts.labels,
-                                    outputCounts.values,
-                                    createHexGradientArray(
-                                        '#FDE68A',
-                                        '#F59E0B',
-                                        outputCounts.values.length,
-                                    ),
-                                )}
-                                options={{
-                                    ...pieChartOptions,
-                                    plugins: {
-                                        legend: {
-                                            display: false,
-                                        },
-                                    },
-                                }}
-                            />
-                        }
-                        leadValue={outputCounts.values[0] ?? 0}
-                        entries={topEntries(
-                            outputCounts.labels,
-                            outputCounts.values,
-                        )}
-                    />
-
-                    <div className="col-span-2">
-                        <EnergyUsageCard
-                            tokens={assistantResponses.map((p) => {
-                                return {
-                                    tokens: p.tokens,
-                                    created_at: p.created_at,
-                                };
-                            })}
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(340px,1.2fr)]">
+                    <div className="grid gap-4 sm:grid-cols-2 xl:col-span-2">
+                        <BreakdownCard
+                            title="Top input type"
+                            leadLabel={capitalizeLabel(
+                                inputCounts.labels[0] ?? 'None',
+                            )}
+                            leadValue={inputCounts.values[0] ?? 0}
+                            entries={topEntries(
+                                inputCounts.labels,
+                                inputCounts.values,
+                            )}
+                            series={inputCounts}
+                            colorFrom="#A7F3D0"
+                            colorTo="#10B981"
+                        />
+                        <BreakdownCard
+                            title="Top output type"
+                            leadLabel={capitalizeLabel(
+                                outputCounts.labels[0] ?? 'None',
+                            )}
+                            leadValue={outputCounts.values[0] ?? 0}
+                            entries={topEntries(
+                                outputCounts.labels,
+                                outputCounts.values,
+                            )}
+                            series={outputCounts}
+                            colorFrom="#FDE68A"
+                            colorTo="#F59E0B"
+                        />
+                        <BreakdownCard
+                            title="Top assistant role"
+                            leadLabel={capitalizeLabel(
+                                roleCounts.labels[0] ?? 'None',
+                            )}
+                            leadValue={roleCounts.values[0] ?? 0}
+                            entries={topEntries(
+                                roleCounts.labels,
+                                roleCounts.values,
+                            )}
+                            series={roleCounts}
+                            colorFrom="#BFDBFE"
+                            colorTo="#2563EB"
+                        />
+                        <BreakdownCard
+                            title="Most used model"
+                            leadLabel={modelCounts.labels[0] ?? 'None'}
+                            leadValue={modelCounts.values[0] ?? 0}
+                            entries={topEntries(
+                                modelCounts.labels,
+                                modelCounts.values,
+                            )}
+                            series={modelCounts}
+                            colorFrom="#E9D5FF"
+                            colorTo="#7C3AED"
                         />
                     </div>
 
-                    <BreakdownCard
-                        title="Top assistant role"
-                        leadLabel={capitalizeLabel(
-                            roleCounts.labels[0] ?? 'None',
-                        )}
-                        leadValue={roleCounts.values[0] ?? 0}
-                        entries={topEntries(
-                            roleCounts.labels,
-                            roleCounts.values,
-                        )}
-                    />
-                    <BreakdownCard
-                        title="Most used model"
-                        leadLabel={modelCounts.labels[0] ?? 'None'}
-                        leadValue={modelCounts.values[0] ?? 0}
-                        entries={topEntries(
-                            modelCounts.labels,
-                            modelCounts.values,
-                        )}
-                    />
+                    <div className="space-y-4">
+                        <EnergyUsageCard energyStats={energyUsageStats} />
+                        <EnergyEquivalentsCard
+                            totalTokens={energyUsageStats.totalTokens}
+                        />
+                    </div>
                 </div>
             </div>
         </AppLayout>

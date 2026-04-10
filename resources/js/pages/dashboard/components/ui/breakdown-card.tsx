@@ -1,17 +1,29 @@
-import { formatCount, capitalizeLabel } from '../../chart-utils';
+import { Pie } from 'react-chartjs-2';
+import { createHexGradientArray } from '@/lib/utils';
+import type { ChartSeries } from '@/types/dashboard';
+import {
+    capitalizeLabel,
+    formatCount,
+    makePieData,
+    pieChartOptions,
+} from '../../chart-utils';
 
 export function BreakdownCard({
     title,
     leadLabel,
     leadValue,
     entries,
-    chart,
+    series,
+    colorFrom,
+    colorTo,
 }: {
     title: string;
     leadLabel: string;
     leadValue: number;
     entries: Array<{ label: string; value: number }>;
-    chart?: React.ReactNode;
+    series?: ChartSeries;
+    colorFrom?: string;
+    colorTo?: string;
 }) {
     return (
         <div className="rounded-2xl border border-sidebar-accent bg-white/70 p-5 shadow-sm">
@@ -27,7 +39,29 @@ export function BreakdownCard({
                 </p>
             </div>
             <div className="mt-5 space-y-3">
-                {chart}
+                {series && series.values.length > 0 && colorFrom && colorTo ? (
+                    <div className="mx-auto max-w-[220px]">
+                        <Pie
+                            data={makePieData(
+                                series.labels,
+                                series.values,
+                                createHexGradientArray(
+                                    colorFrom,
+                                    colorTo,
+                                    series.values.length,
+                                ),
+                            )}
+                            options={{
+                                ...pieChartOptions,
+                                plugins: {
+                                    legend: {
+                                        display: false,
+                                    },
+                                },
+                            }}
+                        />
+                    </div>
+                ) : null}
                 {entries.length ? (
                     entries.map((entry) => (
                         <div
