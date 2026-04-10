@@ -8,12 +8,13 @@ import {
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavItem } from '@/types';
+import { ChatNewButton } from './chat-new-button';
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { isCurrentUrl } = useCurrentUrl();
 
     return (
-        <SidebarGroup className="px-2 py-0">
+        <SidebarGroup className="border-b border-sidebar-border px-2 pt-0 pb-2">
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => (
@@ -30,6 +31,9 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 ))}
+            </SidebarMenu>
+            <SidebarMenu>
+                <ChatNewButton />
             </SidebarMenu>
         </SidebarGroup>
     );

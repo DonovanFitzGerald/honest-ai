@@ -7,7 +7,6 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
-    SidebarGroup,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -17,7 +16,6 @@ import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 import type { Chat } from '@/types/assistant';
 import AppLogo from './app-logo';
-import { ChatNewButton } from './chat-new-button';
 import ChatSidebarItems from './chat-sidebar-items';
 
 const mainNavItems: NavItem[] = [
@@ -48,7 +46,7 @@ export function AppSidebar() {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
+                        <SidebarMenuButton size="lg" asChild className="w-fit">
                             <Link href={dashboard()} prefetch>
                                 <AppLogo />
                             </Link>
@@ -59,11 +57,6 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
-                <SidebarGroup className="px-2 py-0">
-                    <SidebarMenu>
-                        <ChatNewButton />
-                    </SidebarMenu>
-                </SidebarGroup>
                 <SidebarMenu>
                     <ChatSidebarItems items={sidebarChats} />
                 </SidebarMenu>

@@ -55,9 +55,10 @@ class ChatController extends Controller
         }
 
         if ($request->active_chat_id == $chat->id) {
+            $chat->delete();
             return redirect()->route('dashboard')->setStatusCode(303);
         }
-        $chat->delete();
 
+        $chat->delete();
     }
 }
