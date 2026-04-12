@@ -141,9 +141,7 @@ export default function Welcome({
                                             variant="outline"
                                             asChild
                                         >
-                                            <Link href={login()}>
-                                                View existing account
-                                            </Link>
+                                            <Link href={login()}>Log in</Link>
                                         </Button>
                                     )}
                                 </div>

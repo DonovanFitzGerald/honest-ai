@@ -23,7 +23,7 @@ class ChatController extends Controller
             return $response;
         }
 
-        return inertia('chat', [
+        return inertia('chat/index', [
             'chat' => $chat,
             'messages' => $chat->messages()
                 ->orderBy('sequence')

@@ -1,5 +1,5 @@
 import type { ChartOptions } from 'chart.js';
-import { ArrowDown, ArrowUp, Zap } from 'lucide-react';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import '../chart-utils';
 import { formatKillaMetric, type EnergyUsageStats } from '../chart-utils';
