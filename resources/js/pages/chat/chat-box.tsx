@@ -36,7 +36,7 @@ export default function ChatBox({
     inputText: string;
     setInputText: (text: string) => void;
     initialMessages: Message[];
-    assistantModels: AssistantModelOption;
+    assistantModels: AssistantModelsSharedData;
     handleInputSubmit: (
         content: string,
         options: {
@@ -50,12 +50,10 @@ export default function ChatBox({
     sending: boolean;
 }) {
     const [selectedModel, setSelectedModel] = useState(
-        getSelectedModel(initialMessages ?? [], assistantModels),
+        initialMessages[initialMessages.length - 1].model ?? defaultModel,
     );
     const [thinkingLevel, setThinkingLevel] = useState<ThinkingLevel>(
-        assistantModels.thinking_levels[
-            assistantModels.thinking_levels.length - 1
-        ],
+        selectedModel.thinking_levels[selectedModel.thinking_levels.length - 1],
     );
     const [selectedTools, setSelectedTools] = useState<BuiltInTool[]>([]);
 

@@ -27,6 +27,8 @@ export default function Show({
         assistantModels: AssistantModelOption;
     }>().props;
 
+    const defaultModel = assistantModels.default;
+
     const breadcrumbs = [
         { title: chat.title ?? `Chat #${chat.id}`, href: `/chats/${chat.id}` },
     ];

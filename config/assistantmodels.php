@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'default' => env('ASSISTANT_MODEL_DEFAULT', 'gemini-3.1-pro-preview'),
+    'default' => 'gemini-3.1-pro-preview',
 
     'models' => [
         'gemini-3.1-flash-lite-preview' => [
