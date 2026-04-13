@@ -4,14 +4,24 @@ namespace App\Services;
 
 use App\Models\Chat;
 use App\Support\AssistantModelRegistry;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
+use Throwable;
 
 class AssistantService
 {
+    private const CHAT_REQUEST_RETRY_DELAYS_MS = [250, 750];
+
+    private const CHAT_REQUEST_RETRYABLE_STATUS_CODES = [408, 429];
+
     public function __construct(
         private readonly AssistantModelRegistry $models,
-    ) {}
+    ) {
+    }
 
     public function call(
         Chat $chat,
@@ -35,10 +45,7 @@ class AssistantService
             $thinkingLevel,
         );
 
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'x-goog-api-key' => $apiKey,
-        ])->post($url, $payload);
+        $response = $this->sendGenerateContentRequest($url, $apiKey, $payload, retry: true);
 
         if ($response->failed()) {
             throw new RuntimeException(
@@ -105,10 +112,7 @@ class AssistantService
             ],
         ];
 
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'x-goog-api-key' => $apiKey,
-        ])->post($url, $payload);
+        $response = $this->sendGenerateContentRequest($url, $apiKey, $payload);
 
         if ($response->failed()) {
             throw new RuntimeException(
@@ -202,6 +206,44 @@ class AssistantService
     private function buildGenerateContentUrl(string $modelKey): string
     {
         return "https://generativelanguage.googleapis.com/v1beta/models/{$modelKey}:generateContent";
+    }
+
+    private function sendGenerateContentRequest(
+        string $url,
+        string $apiKey,
+        array $payload,
+        bool $retry = false,
+    ): Response {
+        $request = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'x-goog-api-key' => $apiKey,
+        ]);
+
+        if ($retry) {
+            $request = $request->retry(
+                self::CHAT_REQUEST_RETRY_DELAYS_MS,
+                when: fn(Throwable $exception): bool => $this->shouldRetryRequest($exception),
+                throw: false,
+            );
+        }
+
+        return $request->post($url, $payload);
+    }
+
+    private function shouldRetryRequest(Throwable $exception): bool
+    {
+        if ($exception instanceof ConnectionException) {
+            return true;
+        }
+
+        if ($exception instanceof RequestException) {
+            $status = $exception->response->status();
+
+            return $status >= 500
+                || in_array($status, self::CHAT_REQUEST_RETRYABLE_STATUS_CODES, true);
+        }
+
+        return false;
     }
 
     private function buildChatPayload(
