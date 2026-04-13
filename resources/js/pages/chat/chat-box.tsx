@@ -1,6 +1,5 @@
 import { Plus, Send, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -17,49 +16,54 @@ import {
 } from '@/components/ui/select';
 import type { Message } from '@/types/assistant';
 import type {
-    AssistantModelOption,
     AssistantModelsSharedData,
     BuiltInTool,
     ThinkingLevel,
 } from '@/types/assistant-models';
 
-export default function ChatBox({
-    inputText,
-    setInputText,
-    initialMessages,
-    assistantModels,
-    handleInputSubmit,
-    sendErrors,
-    setSendErrors,
-    sending,
-}: {
-    inputText: string;
-    setInputText: (text: string) => void;
-    initialMessages: Message[];
+export type ChatComposerSubmission = Pick<Message, 'content'> & {
+    model: Message['model'];
+    thinkingLevel: ThinkingLevel;
+    tools: BuiltInTool[];
+};
+
+type ChatBoxProps = {
     assistantModels: AssistantModelsSharedData;
-    handleInputSubmit: (
-        content: string,
-        options: {
-            model: string | null;
-            thinkingLevel: ThinkingLevel;
-            tools: BuiltInTool[];
-        },
-    ) => void;
-    sendErrors: string[];
-    setSendErrors: (errors: string[]) => void;
+    initialModel: AssistantModelsSharedData['default'];
+    inputText: Message['content'];
+    onInputTextChange: (text: Message['content']) => void;
+    onSubmit: (submission: ChatComposerSubmission) => void | Promise<void>;
     sending: boolean;
-}) {
-    const [selectedModel, setSelectedModel] = useState(
-        initialMessages[initialMessages.length - 1].model ?? defaultModel,
-    );
-    const [thinkingLevel, setThinkingLevel] = useState<ThinkingLevel>(
-        selectedModel.thinking_levels[selectedModel.thinking_levels.length - 1],
+};
+
+export default function ChatBox({
+    assistantModels,
+    initialModel,
+    inputText,
+    onInputTextChange,
+    onSubmit,
+    sending,
+}: ChatBoxProps) {
+    const [selectedModel, setSelectedModel] = useState(initialModel);
+    const selectedModelOption =
+        findModelOption(selectedModel, assistantModels) ??
+        findModelOption(initialModel, assistantModels);
+    const [thinkingLevel, setThinkingLevel] = useState<ThinkingLevel>(() =>
+        getDefaultThinkingLevel(selectedModelOption),
     );
     const [selectedTools, setSelectedTools] = useState<BuiltInTool[]>([]);
+    const normalizedSelectedModel =
+        selectedModelOption?.value ?? assistantModels.default;
+    const normalizedThinkingLevel = getSupportedThinkingLevel(
+        selectedModelOption,
+        thinkingLevel,
+    );
+    const thinkingLevelOptions = selectedModelOption?.thinking_levels ?? [];
+    const availableToolOptions = selectedModelOption?.built_in_tools ?? [];
+    const addableToolOptions = availableToolOptions.filter(
+        (tool) => !selectedTools.includes(tool),
+    );
 
-    // MARK: Model
-
-    // MARK: Tools
     const addTool = (tool: BuiltInTool) => {
         setSelectedTools((prev) => {
             return prev.includes(tool) ? prev : [...prev, tool];
@@ -70,29 +74,39 @@ export default function ChatBox({
         setSelectedTools((prev) => prev.filter((value) => value !== tool));
     };
 
-    const availableToolOptions: BuiltInTool[] = useMemo(
-        () => selectedModelOption?.built_in_tools ?? [],
-        [selectedModelOption],
-    );
-    const addableToolOptions: BuiltInTool[] = useMemo(
-        () =>
-            availableToolOptions.filter(
-                (tool: BuiltInTool) => !selectedTools.includes(tool),
-            ),
-        [availableToolOptions, selectedTools],
-    );
+    const handleModelChange = (nextModel: string) => {
+        const nextModelOption = findModelOption(nextModel, assistantModels);
+        const nextAvailableToolOptions = nextModelOption?.built_in_tools ?? [];
 
-    // MARK: Input
+        setSelectedModel(nextModel);
+        setThinkingLevel(
+            getSupportedThinkingLevel(nextModelOption, normalizedThinkingLevel),
+        );
+        setSelectedTools((currentTools) =>
+            currentTools.filter((tool) =>
+                nextAvailableToolOptions.includes(tool),
+            ),
+        );
+    };
+
+    const handleSubmit = () => {
+        if (sending || !inputText.trim() || !selectedModelOption) {
+            return;
+        }
+
+        onSubmit({
+            content: inputText,
+            model: normalizedSelectedModel,
+            thinkingLevel: normalizedThinkingLevel,
+            tools: selectedTools,
+        });
+    };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key !== 'Enter') return;
         if (e.shiftKey) return;
         e.preventDefault();
-        handleInputSubmit(inputText, {
-            model: selectedModel,
-            thinkingLevel: thinkingLevel,
-            tools: selectedTools,
-        });
+        handleSubmit();
     };
 
     return (
@@ -100,13 +114,7 @@ export default function ChatBox({
             <textarea
                 className="peer/input field-sizing-content w-full resize-none px-4 focus:outline-none"
                 placeholder="Ask anything..."
-                onChange={(e) => {
-                    if (sendErrors.length > 0) {
-                        setSendErrors([]);
-                    }
-
-                    setInputText(e.target.value);
-                }}
+                onChange={(e) => onInputTextChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 value={inputText}
                 disabled={sending}
@@ -146,9 +154,11 @@ export default function ChatBox({
                         </DropdownMenu>
                     )}
                     <Select
-                        value={selectedModel}
-                        onValueChange={setSelectedModel}
-                        disabled={sending}
+                        value={normalizedSelectedModel}
+                        onValueChange={handleModelChange}
+                        disabled={
+                            sending || assistantModels.options.length === 0
+                        }
                     >
                         <SelectTrigger className="h-full w-fit min-w-32 cursor-pointer flex-nowrap truncate rounded-2xl bg-background">
                             <SelectValue placeholder="Choose a model" />
@@ -168,7 +178,7 @@ export default function ChatBox({
                     {thinkingLevelOptions.length > 0 && (
                         <Select
                             value={
-                                thinkingLevel ||
+                                normalizedThinkingLevel ||
                                 thinkingLevelOptions[
                                     thinkingLevelOptions.length - 1
                                 ]
@@ -222,8 +232,10 @@ export default function ChatBox({
                 <Button
                     type="button"
                     className="flex aspect-square h-10 w-10 cursor-pointer justify-center rounded-full bg-foreground text-primary-foreground hover:bg-foreground/80"
-                    onClick={() => send()}
-                    disabled={sending}
+                    onClick={handleSubmit}
+                    disabled={
+                        sending || !inputText.trim() || !selectedModelOption
+                    }
                 >
                     <Send className="size-4" />
                 </Button>
@@ -232,22 +244,31 @@ export default function ChatBox({
     );
 }
 
-const getSelectedModel = (
-    messages: Message[],
+const findModelOption = (
+    model: Message['model'],
     assistantModels: AssistantModelsSharedData,
-): string => {
-    const activeModels = new Set(
-        assistantModels.options.map((model) => model.value),
-    );
+): AssistantModelsSharedData['options'][number] | undefined =>
+    assistantModels.options.find((option) => option.value === model);
 
-    const latestAssistantModel = [...messages]
-        .reverse()
-        .find(
-            (message) =>
-                message.role === 'assistant' &&
-                typeof message.model === 'string' &&
-                activeModels.has(message.model),
-        )?.model;
+const getDefaultThinkingLevel = (
+    modelOption?: AssistantModelsSharedData['options'][number],
+): ThinkingLevel =>
+    modelOption?.thinking_level ?? modelOption?.thinking_levels?.at(-1) ?? null;
 
-    return latestAssistantModel ?? assistantModels.default;
+const getSupportedThinkingLevel = (
+    modelOption?: AssistantModelsSharedData['options'][number],
+    thinkingLevel?: ThinkingLevel,
+): ThinkingLevel => {
+    if (!modelOption) {
+        return null;
+    }
+
+    if (
+        thinkingLevel &&
+        (modelOption.thinking_levels ?? []).includes(thinkingLevel)
+    ) {
+        return thinkingLevel;
+    }
+
+    return getDefaultThinkingLevel(modelOption);
 };

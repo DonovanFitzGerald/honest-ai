@@ -1,18 +1,15 @@
 import { usePage } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
-import { route } from 'ziggy-js';
 import AlertError from '@/components/alert-error';
 import ChatMessage from '@/components/chat-message';
 import { UseLogSidebar } from '@/components/use-log-sidebar';
 import AppLayout from '@/layouts/app-layout';
+import chatMessages from '@/routes/chats/messages';
+import chatUseLogs from '@/routes/chats/use-logs';
 import type { Chat, Message, UseLog } from '@/types/assistant';
-import type {
-    AssistantModelOption,
-    BuiltInTool,
-    ThinkingLevel,
-} from '@/types/assistant-models';
+import type { AssistantModelsSharedData } from '@/types/assistant-models';
 import { redirectToDashboardIfForbidden } from '../auth/redirect';
-import ChatBox from './chat-box';
+import ChatBox, { type ChatComposerSubmission } from './chat-box';
 
 export default function Show({
     chat,
@@ -23,11 +20,7 @@ export default function Show({
     messages: Message[];
     useLog: UseLog | null;
 }) {
-    const { assistantModels } = usePage<{
-        assistantModels: AssistantModelOption;
-    }>().props;
-
-    const defaultModel = assistantModels.default;
+    const { assistantModels } = usePage().props;
 
     const breadcrumbs = [
         { title: chat.title ?? `Chat #${chat.id}`, href: `/chats/${chat.id}` },
@@ -36,24 +29,29 @@ export default function Show({
     const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
     const [sending, setSending] = useState(false);
     const [sendErrors, setSendErrors] = useState<string[]>([]);
-    const [useLog, setUseLog] = useState<UseLog | null>(
-        initialUseLog?.total_use_cases ? initialUseLog : null,
-    );
-
-    useEffect(() => {
-        setUseLog(initialUseLog?.total_use_cases ? initialUseLog : null);
-        setMessages(initialMessages ?? []);
-        setSendErrors([]);
-        setSending(false);
-    }, [assistantModels, chat.id, initialMessages, initialUseLog]);
-
+    const [useLog, setUseLog] = useState<UseLog | null>(initialUseLog);
+    const preferredModel = getPreferredModel(messages, assistantModels);
     const conversationDiv = useRef<HTMLDivElement | null>(null);
 
-    const csrf =
+    useEffect(() => {
+        setInputText('');
+        setMessages(initialMessages ?? []);
+        setUseLog(initialUseLog);
+        setSendErrors([]);
+        setSending(false);
+    }, [chat.id, initialMessages, initialUseLog]);
+
+    const csrfToken =
         (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)
             ?.content ?? '';
+    const requestHeaders: HeadersInit = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': csrfToken,
+    };
 
-    const scrollToBottom = (behavior: ScrollBehavior = 'instant') => {
+    const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
         const el = conversationDiv.current;
         if (!el) return;
         el.scrollTo({ top: el.scrollHeight, behavior });
@@ -64,23 +62,27 @@ export default function Show({
     }, [messages.length]);
 
     useEffect(() => {
-        scrollToBottom('instant');
+        scrollToBottom('auto');
     }, []);
 
     const parseErrorResponse = async (
         response: Response,
-    ): Promise<string[]> => {
+    ): Promise<string[] | null> => {
         const fallbackMessage =
             'We could not send your message. Please try again.';
+        const responseRequestId = response.headers.get('X-Request-Id');
 
         if (await redirectToDashboardIfForbidden(response)) {
-            return [];
+            return null;
         }
 
         if (response.status === 419) {
-            return [
-                'Your session expired. Refresh the page and sign in again before sending another message.',
-            ];
+            return appendRequestId(
+                [
+                    'Your session expired. Refresh the page and sign in again before sending another message.',
+                ],
+                responseRequestId,
+            );
         }
 
         try {
@@ -92,63 +94,69 @@ export default function Show({
             const requestId =
                 typeof payload.request_id === 'string'
                     ? payload.request_id
-                    : null;
+                    : responseRequestId;
 
             const errors = Object.values(payload.errors ?? {}).flatMap(
                 (value) => (Array.isArray(value) ? value : [value]),
             );
 
             if (errors.length > 0) {
-                return requestId
-                    ? [...errors, `Reference ID: ${requestId}`]
-                    : errors;
+                return appendRequestId(errors, requestId);
             }
 
             if (payload.message) {
-                return requestId
-                    ? [payload.message, `Reference ID: ${requestId}`]
-                    : [payload.message];
+                return appendRequestId([payload.message], requestId);
             }
         } catch {
             // Fall back to a status-based message when the server returns no JSON body.
         }
 
         if (response.status === 422) {
-            return [
-                'Your message could not be sent because the request was invalid.',
-            ];
+            return appendRequestId(
+                [
+                    'Your message could not be sent because the request was invalid.',
+                ],
+                responseRequestId,
+            );
         }
 
         if (response.status === 429) {
-            return [
-                'Too many requests were sent. Wait a moment and try again.',
-            ];
+            return appendRequestId(
+                ['Too many requests were sent. Wait a moment and try again.'],
+                responseRequestId,
+            );
         }
 
         if (response.status >= 500) {
-            return [
-                'The server failed while sending your message. Please try again shortly.',
-            ];
+            return appendRequestId(
+                [
+                    'The server failed while sending your message. Please try again shortly.',
+                ],
+                responseRequestId,
+            );
         }
 
-        return [fallbackMessage];
+        return appendRequestId([fallbackMessage], responseRequestId);
     };
 
-    const requestUseLog = async (model: string | null = null) => {
+    const handleInputTextChange = (nextValue: Message['content']) => {
+        if (sendErrors.length > 0) {
+            setSendErrors([]);
+        }
+
+        setInputText(nextValue);
+    };
+
+    const requestUseLog = async (
+        model: ChatComposerSubmission['model'] = null,
+    ) => {
         try {
-            const response = await fetch(
-                route('chats.use-logs.store', { chat: chat.id }),
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrf,
-                    },
-                    body: JSON.stringify(model ? { model } : {}),
-                },
-            );
+            const endpoint = chatUseLogs.store(chat);
+            const response = await fetch(endpoint.url, {
+                method: endpoint.method,
+                headers: requestHeaders,
+                body: JSON.stringify(model ? { model } : {}),
+            });
 
             if (await redirectToDashboardIfForbidden(response)) {
                 return;
@@ -156,25 +164,26 @@ export default function Show({
 
             if (!response.ok) return;
 
-            const data = await response.json();
-            setUseLog(data.parsed);
+            const data = (await response.json()) as {
+                useLog: UseLog;
+                parsed: NonNullable<UseLog['parsed']>;
+            };
+
+            setUseLog({
+                ...data.useLog,
+                parsed: data.parsed,
+            });
         } catch (error) {
             console.error(error);
         }
     };
 
-    const handleInputSubmit = async (
-        content: string,
-        {
-            model,
-            thinkingLevel,
-            tools,
-        }: {
-            model: string | null;
-            thinkingLevel: ThinkingLevel;
-            tools: BuiltInTool[];
-        },
-    ) => {
+    const handleInputSubmit = async ({
+        content,
+        model,
+        thinkingLevel,
+        tools,
+    }: ChatComposerSubmission) => {
         const trimmed = content.trim();
         if (!trimmed || sending) return;
 
@@ -182,58 +191,53 @@ export default function Show({
         setInputText('');
         setSendErrors([]);
 
-        const tempId = Date.now();
-        const tempUserMessage: Message = {
-            id: tempId,
-            chat_id: chat.id,
-            role: 'user',
-            content: trimmed,
-            sequence: Number.MAX_SAFE_INTEGER,
-            model: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-        };
+        const optimisticMessage = createOptimisticUserMessage(chat.id, trimmed);
 
-        setMessages((prev) => [...prev, tempUserMessage]);
+        setMessages((prev) => [...prev, optimisticMessage]);
 
         try {
-            const response = await fetch(
-                route('chats.messages.store', { chat: chat.id }),
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrf,
-                    },
-                    body: JSON.stringify({
-                        content: trimmed,
-                        model: model,
-                        thinking_level: thinkingLevel,
-                        tools: tools,
-                    }),
-                },
-            );
+            const endpoint = chatMessages.store(chat);
+            const response = await fetch(endpoint.url, {
+                method: endpoint.method,
+                headers: requestHeaders,
+                body: JSON.stringify({
+                    content: trimmed,
+                    model,
+                    thinking_level: thinkingLevel,
+                    tools,
+                }),
+            });
 
             if (!response.ok) {
                 const errors = await parseErrorResponse(response);
+                if (!errors) {
+                    setMessages((prev) =>
+                        prev.filter(
+                            (message) => message.id !== optimisticMessage.id,
+                        ),
+                    );
+                    return;
+                }
+
                 throw new Error(errors.join('\n'));
             }
 
-            const data = await response.json();
+            const data = (await response.json()) as {
+                userMessage: Message;
+                assistantMessage: Message;
+            };
 
             setMessages((prev) => [
-                ...prev.filter((m) => m.id !== tempId),
+                ...prev.filter((m) => m.id !== optimisticMessage.id),
                 data.userMessage,
                 data.assistantMessage,
             ]);
 
-            const responseModel = data.assistantMessage.model;
-
-            requestUseLog(responseModel);
+            void requestUseLog(model);
         } catch (error) {
-            setMessages((prev) => prev.filter((m) => m.id !== tempId));
+            setMessages((prev) =>
+                prev.filter((message) => message.id !== optimisticMessage.id),
+            );
             setInputText(trimmed);
             setSendErrors(
                 error instanceof Error
@@ -282,13 +286,11 @@ export default function Show({
                         )}
 
                         <ChatBox
+                            initialModel={preferredModel}
                             inputText={inputText}
-                            setInputText={setInputText}
+                            onInputTextChange={handleInputTextChange}
                             assistantModels={assistantModels}
-                            initialMessages={messages}
-                            handleInputSubmit={handleInputSubmit}
-                            sendErrors={sendErrors}
-                            setSendErrors={setSendErrors}
+                            onSubmit={handleInputSubmit}
                             sending={sending}
                         />
                     </div>
@@ -304,3 +306,44 @@ export default function Show({
         </AppLayout>
     );
 }
+
+const appendRequestId = (messages: string[], requestId: string | null) =>
+    requestId ? [...messages, `Reference ID: ${requestId}`] : messages;
+
+const createOptimisticUserMessage = (
+    chatId: Chat['id'],
+    content: Message['content'],
+): Message => {
+    const timestamp = new Date().toISOString();
+
+    return {
+        id: -Date.now(),
+        chat_id: chatId,
+        role: 'user',
+        content,
+        sequence: Number.MAX_SAFE_INTEGER,
+        model: null,
+        created_at: timestamp,
+        updated_at: timestamp,
+    };
+};
+
+const getPreferredModel = (
+    messages: Message[],
+    assistantModels: AssistantModelsSharedData,
+): AssistantModelsSharedData['default'] => {
+    const activeModels = new Set(
+        assistantModels.options.map((model) => model.value),
+    );
+
+    const latestAssistantModel = [...messages]
+        .reverse()
+        .find(
+            (message) =>
+                message.role === 'assistant' &&
+                typeof message.model === 'string' &&
+                activeModels.has(message.model),
+        )?.model;
+
+    return latestAssistantModel ?? assistantModels.default;
+};
