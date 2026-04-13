@@ -20,19 +20,14 @@ import type {
     BuiltInTool,
     ThinkingLevel,
 } from '@/types/assistant-models';
-
-export type ChatComposerSubmission = Pick<Message, 'content'> & {
-    model: Message['model'];
-    thinkingLevel: ThinkingLevel;
-    tools: BuiltInTool[];
-};
+import type { ChatSendInput } from './chat.types';
 
 type ChatBoxProps = {
     assistantModels: AssistantModelsSharedData;
     initialModel: AssistantModelsSharedData['default'];
     inputText: Message['content'];
     onInputTextChange: (text: Message['content']) => void;
-    onSubmit: (submission: ChatComposerSubmission) => void | Promise<void>;
+    onSubmit: (submission: ChatSendInput) => void | Promise<void>;
     sending: boolean;
 };
 
