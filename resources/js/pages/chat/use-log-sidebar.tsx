@@ -1,16 +1,16 @@
 import { PanelRightOpen } from 'lucide-react';
 import type { Chat, Message, UseLog } from '@/types/assistant';
 import {
-    CompleteChatDownloadButton,
-    UserPromptsDownloadButton,
-    UseLogDownloadButton,
-} from './components/chat-download-buttons';
-import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
 } from '../../components/ui/collapsible';
 import { UseLogDisplay } from '../../components/use-log';
+import {
+    CompleteChatDownloadButton,
+    UserPromptsDownloadButton,
+    UseLogDownloadButton,
+} from './components/chat-download-buttons';
 
 export function UseLogSidebar({
     useLog,
