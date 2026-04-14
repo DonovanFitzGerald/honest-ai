@@ -4,12 +4,12 @@ import AlertError from '@/components/alert-error';
 import ChatMessage from '@/components/chat-message';
 import { UseLogSidebar } from '@/components/use-log-sidebar';
 import AppLayout from '@/layouts/app-layout';
-import chatMessages from '@/routes/chats/messages';
-import chatUseLogs from '@/routes/chats/use-logs';
 import type { Chat, Message, UseLog } from '@/types/assistant';
 import type { AssistantModelsSharedData } from '@/types/assistant-models';
 import { redirectToDashboardIfForbidden } from '../auth/redirect';
-import ChatBox, { type ChatComposerSubmission } from './chat-box';
+import ChatBox from './chat-box';
+import { createUseLog, sendChatMessage } from './chat.api';
+import type { ChatSendInput } from './chat.types';
 
 export default function Show({
     chat,
@@ -44,12 +44,6 @@ export default function Show({
     const csrfToken =
         (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)
             ?.content ?? '';
-    const requestHeaders: HeadersInit = {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': csrfToken,
-    };
 
     const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
         const el = conversationDiv.current;
@@ -147,33 +141,21 @@ export default function Show({
         setInputText(nextValue);
     };
 
-    const requestUseLog = async (
-        model: ChatComposerSubmission['model'] = null,
-    ) => {
+    const requestUseLog = async (model: ChatSendInput['model'] = null) => {
         try {
-            const endpoint = chatUseLogs.store(chat);
-            const response = await fetch(endpoint.url, {
-                method: endpoint.method,
-                headers: requestHeaders,
-                body: JSON.stringify(model ? { model } : {}),
+            const nextUseLog = await createUseLog(chat.id, model, {
+                csrfToken,
             });
 
-            if (await redirectToDashboardIfForbidden(response)) {
+            setUseLog(nextUseLog);
+        } catch (error) {
+            if (
+                error instanceof Response &&
+                (await redirectToDashboardIfForbidden(error))
+            ) {
                 return;
             }
 
-            if (!response.ok) return;
-
-            const data = (await response.json()) as {
-                useLog: UseLog;
-                parsed: NonNullable<UseLog['parsed']>;
-            };
-
-            setUseLog({
-                ...data.useLog,
-                parsed: data.parsed,
-            });
-        } catch (error) {
             console.error(error);
         }
     };
@@ -183,7 +165,7 @@ export default function Show({
         model,
         thinkingLevel,
         tools,
-    }: ChatComposerSubmission) => {
+    }: ChatSendInput) => {
         const trimmed = content.trim();
         if (!trimmed || sending) return;
 
@@ -196,36 +178,18 @@ export default function Show({
         setMessages((prev) => [...prev, optimisticMessage]);
 
         try {
-            const endpoint = chatMessages.store(chat);
-            const response = await fetch(endpoint.url, {
-                method: endpoint.method,
-                headers: requestHeaders,
-                body: JSON.stringify({
+            const data = await sendChatMessage(
+                chat.id,
+                {
                     content: trimmed,
                     model,
-                    thinking_level: thinkingLevel,
+                    thinkingLevel,
                     tools,
-                }),
-            });
-
-            if (!response.ok) {
-                const errors = await parseErrorResponse(response);
-                if (!errors) {
-                    setMessages((prev) =>
-                        prev.filter(
-                            (message) => message.id !== optimisticMessage.id,
-                        ),
-                    );
-                    return;
-                }
-
-                throw new Error(errors.join('\n'));
-            }
-
-            const data = (await response.json()) as {
-                userMessage: Message;
-                assistantMessage: Message;
-            };
+                },
+                {
+                    csrfToken,
+                },
+            );
 
             setMessages((prev) => [
                 ...prev.filter((m) => m.id !== optimisticMessage.id),
@@ -235,19 +199,37 @@ export default function Show({
 
             void requestUseLog(model);
         } catch (error) {
-            setMessages((prev) =>
-                prev.filter((message) => message.id !== optimisticMessage.id),
-            );
-            setInputText(trimmed);
-            setSendErrors(
-                error instanceof Error
-                    ? error.message
-                          .split('\n')
-                          .map((message) => message.trim())
-                          .filter(Boolean)
-                    : ['We could not send your message. Please try again.'],
-            );
-            console.error(error);
+            if (error instanceof Response) {
+                const errors = await parseErrorResponse(error);
+                if (!errors) {
+                    setMessages((prev) =>
+                        prev.filter(
+                            (message) => message.id !== optimisticMessage.id,
+                        ),
+                    );
+                    return;
+                }
+
+                setMessages((prev) =>
+                    prev.filter(
+                        (message) => message.id !== optimisticMessage.id,
+                    ),
+                );
+                setInputText(trimmed);
+                setSendErrors(errors);
+                console.error(error);
+            } else {
+                setMessages((prev) =>
+                    prev.filter(
+                        (message) => message.id !== optimisticMessage.id,
+                    ),
+                );
+                setInputText(trimmed);
+                setSendErrors([
+                    'We could not send your message. Please try again.',
+                ]);
+                console.error(error);
+            }
         } finally {
             setSending(false);
         }

@@ -1,4 +1,4 @@
-import { Plus, Send, X } from 'lucide-react';
+import { Send, Settings2, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,19 +20,14 @@ import type {
     BuiltInTool,
     ThinkingLevel,
 } from '@/types/assistant-models';
-
-export type ChatComposerSubmission = Pick<Message, 'content'> & {
-    model: Message['model'];
-    thinkingLevel: ThinkingLevel;
-    tools: BuiltInTool[];
-};
+import type { ChatSendInput } from './chat.types';
 
 type ChatBoxProps = {
     assistantModels: AssistantModelsSharedData;
     initialModel: AssistantModelsSharedData['default'];
     inputText: Message['content'];
     onInputTextChange: (text: Message['content']) => void;
-    onSubmit: (submission: ChatComposerSubmission) => void | Promise<void>;
+    onSubmit: (submission: ChatSendInput) => void | Promise<void>;
     sending: boolean;
 };
 
@@ -133,7 +128,7 @@ export default function ChatBox({
                                         availableToolOptions.length === 0
                                     }
                                 >
-                                    <Plus className="size-4" />
+                                    <Settings2 className="size-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
@@ -144,10 +139,10 @@ export default function ChatBox({
                                 {addableToolOptions.map((tool) => (
                                     <DropdownMenuItem
                                         key={tool}
-                                        className="cursor-pointer rounded-lg"
+                                        className="cursor-pointer rounded-lg capitalize"
                                         onClick={() => addTool(tool)}
                                     >
-                                        {tool}
+                                        {tool.split('_').join(' ')}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
@@ -188,7 +183,7 @@ export default function ChatBox({
                             }
                             disabled={sending}
                         >
-                            <SelectTrigger className="h-full w-fit min-w-32 cursor-pointer flex-nowrap truncate rounded-2xl bg-background">
+                            <SelectTrigger className="h-full w-fit min-w-32 cursor-pointer flex-nowrap truncate rounded-2xl bg-background capitalize">
                                 <SelectValue placeholder="Thinking level" />
                             </SelectTrigger>
                             <SelectContent>
@@ -197,7 +192,7 @@ export default function ChatBox({
                                         <SelectItem
                                             key={option}
                                             value={option}
-                                            className="cursor-pointer"
+                                            className="cursor-pointer capitalize"
                                         >
                                             {option}
                                         </SelectItem>
@@ -213,7 +208,7 @@ export default function ChatBox({
                                 key={tool}
                                 className="flex items-center gap-2 rounded-2xl border border-border bg-accent px-3 py-2 text-sm shadow-sm"
                             >
-                                <p className="text-accent-foreground">
+                                <p className="text-accent-foreground capitalize">
                                     {tool.split('_').join(' ')}
                                 </p>
                                 <button
