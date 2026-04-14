@@ -4,13 +4,13 @@ import {
     CompleteChatDownloadButton,
     UserPromptsDownloadButton,
     UseLogDownloadButton,
-} from './chat-download-buttons';
+} from './components/chat-download-buttons';
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
-} from './ui/collapsible';
-import { UseLogDisplay } from './use-log';
+} from '../../components/ui/collapsible';
+import { UseLogDisplay } from '../../components/use-log';
 
 export function UseLogSidebar({
     useLog,

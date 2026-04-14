@@ -1,15 +1,15 @@
 import { usePage } from '@inertiajs/react';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AlertError from '@/components/alert-error';
 import ChatMessage from '@/components/chat-message';
-import { UseLogSidebar } from '@/components/use-log-sidebar';
 import AppLayout from '@/layouts/app-layout';
+import { UseLogSidebar } from '@/pages/chat/use-log-sidebar';
 import type { Chat, Message, UseLog } from '@/types/assistant';
 import type { AssistantModelsSharedData } from '@/types/assistant-models';
-import { redirectToDashboardIfForbidden } from '../auth/redirect';
-import ChatBox from './chat-box';
-import { createUseLog, sendChatMessage } from './chat.api';
+import { parseErrorResponse, requestUseLog } from './chat.api';
+import { sendChatMessage } from './chat.api';
 import type { ChatSendInput } from './chat.types';
+import ChatBox from './components/chat-box';
 
 export default function Show({
     chat,
@@ -59,105 +59,12 @@ export default function Show({
         scrollToBottom('auto');
     }, []);
 
-    const parseErrorResponse = async (
-        response: Response,
-    ): Promise<string[] | null> => {
-        const fallbackMessage =
-            'We could not send your message. Please try again.';
-        const responseRequestId = response.headers.get('X-Request-Id');
-
-        if (await redirectToDashboardIfForbidden(response)) {
-            return null;
-        }
-
-        if (response.status === 419) {
-            return appendRequestId(
-                [
-                    'Your session expired. Refresh the page and sign in again before sending another message.',
-                ],
-                responseRequestId,
-            );
-        }
-
-        try {
-            const payload = (await response.json()) as {
-                message?: string;
-                errors?: Record<string, string[] | string>;
-                request_id?: string;
-            };
-            const requestId =
-                typeof payload.request_id === 'string'
-                    ? payload.request_id
-                    : responseRequestId;
-
-            const errors = Object.values(payload.errors ?? {}).flatMap(
-                (value) => (Array.isArray(value) ? value : [value]),
-            );
-
-            if (errors.length > 0) {
-                return appendRequestId(errors, requestId);
-            }
-
-            if (payload.message) {
-                return appendRequestId([payload.message], requestId);
-            }
-        } catch {
-            // Fall back to a status-based message when the server returns no JSON body.
-        }
-
-        if (response.status === 422) {
-            return appendRequestId(
-                [
-                    'Your message could not be sent because the request was invalid.',
-                ],
-                responseRequestId,
-            );
-        }
-
-        if (response.status === 429) {
-            return appendRequestId(
-                ['Too many requests were sent. Wait a moment and try again.'],
-                responseRequestId,
-            );
-        }
-
-        if (response.status >= 500) {
-            return appendRequestId(
-                [
-                    'The server failed while sending your message. Please try again shortly.',
-                ],
-                responseRequestId,
-            );
-        }
-
-        return appendRequestId([fallbackMessage], responseRequestId);
-    };
-
     const handleInputTextChange = (nextValue: Message['content']) => {
         if (sendErrors.length > 0) {
             setSendErrors([]);
         }
 
         setInputText(nextValue);
-    };
-
-    const requestUseLog = async (model: ChatSendInput['model'] = null) => {
-        try {
-            const nextUseLog = await createUseLog(chat.id, model, {
-                csrfToken,
-            });
-
-            setUseLog(nextUseLog);
-        } catch (error) {
-            if (
-                error instanceof Response &&
-                (await redirectToDashboardIfForbidden(error))
-            ) {
-                return;
-            }
-
-            console.error(error);
-        }
     };
 
     const handleInputSubmit = async ({
@@ -197,7 +104,10 @@ export default function Show({
                 data.assistantMessage,
             ]);
 
-            void requestUseLog(model);
+            const nextUseLog = await requestUseLog(chat.id, model, csrfToken);
+            if (nextUseLog) {
+                setUseLog(nextUseLog);
+            }
         } catch (error) {
             if (error instanceof Response) {
                 const errors = await parseErrorResponse(error);
@@ -288,9 +198,6 @@ export default function Show({
         </AppLayout>
     );
 }
-
-const appendRequestId = (messages: string[], requestId: string | null) =>
-    requestId ? [...messages, `Reference ID: ${requestId}`] : messages;
 
 const createOptimisticUserMessage = (
     chatId: Chat['id'],

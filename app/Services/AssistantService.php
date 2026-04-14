@@ -14,7 +14,7 @@ use Throwable;
 
 class AssistantService
 {
-    private const CHAT_REQUEST_RETRY_DELAYS_MS = [250, 750];
+    private const CHAT_REQUEST_RETRY_DELAYS_MS = [250, 750, 1500, 3000];
 
     private const CHAT_REQUEST_RETRYABLE_STATUS_CODES = [408, 429];
 
