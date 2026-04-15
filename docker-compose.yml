@@ -11,6 +11,7 @@ services:
     environment:
       APP_ENV: production
       APP_DEBUG: 'false'
+      INERTIA_SSR_URL: http://ssr:13714
     # depends_on:
     #   db:
     #     condition: service_healthy
