@@ -96,13 +96,13 @@ export default function Show({
                     csrfToken,
                 },
             );
+            setSending(false);
 
             setMessages((prev) => [
                 ...prev.filter((m) => m.id !== optimisticMessage.id),
                 data.userMessage,
                 data.assistantMessage,
             ]);
-
             const nextUseLog = await requestUseLog(chat.id, model, csrfToken);
             if (nextUseLog) {
                 setUseLog(nextUseLog);
@@ -156,7 +156,7 @@ export default function Show({
                             </div>
                         )}
                         {sending && (
-                            <p className="animate-bounce text-neutral-400">
+                            <p className="animate-bounce text-muted-foreground">
                                 Awaiting Response...
                             </p>
                         )}
