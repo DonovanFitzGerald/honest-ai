@@ -7,16 +7,31 @@ import type {
     BuiltInTool,
     ThinkingLevel,
 } from '@/types/assistant-models';
-import {
-    findModelOption,
-    getDefaultModelThinkingLevel,
-    getModelThinkingLevel,
-} from '../chat-box.utils';
 import type { ChatSendInput } from '../chat.types';
 import ChatBoxInput from './chat-box-input';
 import ChatOptionSelect from './chat-option-select';
 import SelectedTool from './selected-tool';
 import ToolPicker from './tool-picker';
+
+const findModelOption = (
+    assistantModels: AssistantModelsSharedData,
+    model: Message['model'],
+) => assistantModels.options.find((option) => option.value === model);
+
+const resolveThinkingLevel = (
+    modelOption?: AssistantModelsSharedData['options'][number],
+    thinkingLevel?: ThinkingLevel,
+): ThinkingLevel => {
+    if (!modelOption) {
+        return null;
+    }
+
+    if (thinkingLevel && modelOption.thinking_levels?.includes(thinkingLevel)) {
+        return thinkingLevel;
+    }
+
+    return modelOption.thinking_levels?.at(-1) ?? null;
+};
 
 type ChatBoxProps = {
     assistantModels: AssistantModelsSharedData;
@@ -37,15 +52,15 @@ export default function ChatBox({
 }: ChatBoxProps) {
     const [selectedModel, setSelectedModel] = useState(initialModel);
     const selectedModelOption =
-        findModelOption(selectedModel, assistantModels) ??
-        findModelOption(initialModel, assistantModels);
+        findModelOption(assistantModels, selectedModel) ??
+        findModelOption(assistantModels, initialModel);
     const [thinkingLevel, setThinkingLevel] = useState<ThinkingLevel>(() =>
-        getDefaultModelThinkingLevel(selectedModelOption),
+        resolveThinkingLevel(selectedModelOption),
     );
     const [selectedTools, setSelectedTools] = useState<BuiltInTool[]>([]);
     const normalizedSelectedModel =
         selectedModelOption?.value ?? assistantModels.default;
-    const normalizedThinkingLevel = getModelThinkingLevel(
+    const normalizedThinkingLevel = resolveThinkingLevel(
         selectedModelOption,
         thinkingLevel,
     );
@@ -56,13 +71,11 @@ export default function ChatBox({
     );
 
     const handleModelChange = (nextModel: string) => {
-        const nextModelOption = findModelOption(nextModel, assistantModels);
+        const nextModelOption = findModelOption(assistantModels, nextModel);
         const nextAvailableToolOptions = nextModelOption?.built_in_tools ?? [];
 
         setSelectedModel(nextModel);
-        setThinkingLevel(
-            getModelThinkingLevel(nextModelOption, normalizedThinkingLevel),
-        );
+        setThinkingLevel(resolveThinkingLevel(nextModelOption, thinkingLevel));
         setSelectedTools((currentTools) =>
             currentTools.filter((tool) =>
                 nextAvailableToolOptions.includes(tool),

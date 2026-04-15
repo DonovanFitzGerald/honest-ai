@@ -33,17 +33,17 @@ class MessageController extends Controller
                 ->whereNotNull('model')
                 ->orderByDesc('sequence')
                 ->value('model');
-        $allowedTools = $models->builtInToolsFor($effectiveModelKey);
+        $capabilities = $models->capabilitiesFor($effectiveModelKey);
         $allowedThinkingLevels = [
             'default',
-            ...$models->thinkingLevelsFor($effectiveModelKey),
+            ...$capabilities['thinking_levels'],
         ];
 
         $validated = $request->validate([
             'content' => ['required', 'string'],
             'model' => ['sometimes', 'nullable', 'string', Rule::in($models->activeKeys())],
             'tools' => ['sometimes', 'array'],
-            'tools.*' => ['string', Rule::in($allowedTools)],
+            'tools.*' => ['string', Rule::in($capabilities['built_in_tools'])],
             'thinking_level' => ['sometimes', 'nullable', 'string', Rule::in($allowedThinkingLevels)],
         ]);
 

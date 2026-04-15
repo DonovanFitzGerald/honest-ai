@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Chat;
 use App\Support\AssistantModelRegistry;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -18,10 +17,15 @@ class AssistantService
 
     private const CHAT_REQUEST_RETRYABLE_STATUS_CODES = [408, 429];
 
+    private const TOOL_PAYLOAD_KEYS = [
+        'google_search' => 'googleSearch',
+        'url_context' => 'urlContext',
+        'code_execution' => 'codeExecution',
+    ];
+
     public function __construct(
         private readonly AssistantModelRegistry $models,
-    ) {
-    }
+    ) {}
 
     public function call(
         Chat $chat,
@@ -29,52 +33,26 @@ class AssistantService
         array $requestedTools = [],
         ?string $thinkingLevel = null,
     ): array {
-        $contents = $this->buildContentsFromChat($chat, includeAssistant: true);
-        $apiKey = config('services.google.api_key');
         $modelKey = $this->resolveModelKey($chat, $requestedModelKey);
 
-        if (!is_string($apiKey) || trim($apiKey) === '') {
-            throw new RuntimeException('Google API key is not configured for assistant requests.');
-        }
-
-        $url = $this->buildGenerateContentUrl($modelKey);
-        $payload = $this->buildChatPayload(
+        return $this->requestContent(
             $modelKey,
-            $contents,
-            $requestedTools,
-            $thinkingLevel,
+            $this->buildChatPayload(
+                $modelKey,
+                $this->buildContentsFromChat($chat, includeAssistant: true),
+                $requestedTools,
+                $thinkingLevel,
+            ),
+            'Assistant',
+            retry: true,
         );
-
-        $response = $this->sendGenerateContentRequest($url, $apiKey, $payload, retry: true);
-
-        if ($response->failed()) {
-            throw new RuntimeException(
-                'Assistant request failed with status '
-                . $response->status()
-                . ': '
-                . $response->body()
-            );
-        }
-
-        $body = $response->json();
-
-        if (!is_array($body)) {
-            throw new RuntimeException('Assistant response was not valid JSON.');
-        }
-
-        return $body;
     }
 
     public function createUseLog(Chat $chat, ?string $requestedModelKey = null): array
     {
         $promptPath = resource_path('prompts/AI_LOG_FORMATTER.md');
         $schemaPath = resource_path('prompts/AI_LOG_SCHEMA.json');
-        $apiKey = config('services.google.api_key');
         $modelKey = $this->resolveModelKey($chat, $requestedModelKey);
-
-        if (!is_string($apiKey) || trim($apiKey) === '') {
-            throw new RuntimeException('Google API key is not configured for use-log requests.');
-        }
 
         $systemPrompt = file_get_contents($promptPath);
         $schemaJson = file_get_contents($schemaPath);
@@ -95,39 +73,18 @@ class AssistantService
             );
         }
 
-        $contents = $this->buildContentsFromChat($chat, includeAssistant: true);
-
-        $url = $this->buildGenerateContentUrl($modelKey);
-
-        $payload = [
+        $body = $this->requestContent($modelKey, [
             'system_instruction' => [
                 'parts' => [
                     ['text' => $systemPrompt],
                 ],
             ],
-            'contents' => $contents,
+            'contents' => $this->buildContentsFromChat($chat, includeAssistant: true),
             'generationConfig' => [
                 'responseMimeType' => 'application/json',
                 'responseJsonSchema' => $schema,
             ],
-        ];
-
-        $response = $this->sendGenerateContentRequest($url, $apiKey, $payload);
-
-        if ($response->failed()) {
-            throw new RuntimeException(
-                'Use log request failed with status '
-                . $response->status()
-                . ': '
-                . $response->body()
-            );
-        }
-
-        $body = $response->json();
-
-        if (!is_array($body)) {
-            throw new RuntimeException('Use log response was not valid JSON.');
-        }
+        ], 'Use log');
 
         $text = data_get($body, 'candidates.0.content.parts.0.text');
 
@@ -203,11 +160,6 @@ class AssistantService
         return $modelKey;
     }
 
-    private function buildGenerateContentUrl(string $modelKey): string
-    {
-        return "https://generativelanguage.googleapis.com/v1beta/models/{$modelKey}:generateContent";
-    }
-
     private function sendGenerateContentRequest(
         string $url,
         string $apiKey,
@@ -244,6 +196,43 @@ class AssistantService
         }
 
         return false;
+    }
+
+    private function requestContent(
+        string $modelKey,
+        array $payload,
+        string $requestName,
+        bool $retry = false,
+    ): array {
+        $apiKey = config('services.google.api_key');
+
+        if (!is_string($apiKey) || trim($apiKey) === '') {
+            throw new RuntimeException("Google API key is not configured for {$requestName} requests.");
+        }
+
+        $response = $this->sendGenerateContentRequest(
+            "https://generativelanguage.googleapis.com/v1beta/models/{$modelKey}:generateContent",
+            $apiKey,
+            $payload,
+            $retry,
+        );
+
+        if ($response->failed()) {
+            throw new RuntimeException(
+                "{$requestName} request failed with status "
+                . $response->status()
+                . ': '
+                . $response->body()
+            );
+        }
+
+        $body = $response->json();
+
+        if (!is_array($body)) {
+            throw new RuntimeException("{$requestName} response was not valid JSON.");
+        }
+
+        return $body;
     }
 
     private function buildChatPayload(
@@ -302,48 +291,28 @@ class AssistantService
     {
         $enabledTools = array_values(array_unique(array_filter(
             $requestedTools,
-            fn($tool): bool => is_string($tool),
+            fn($tool): bool => is_string($tool) && isset(self::TOOL_PAYLOAD_KEYS[$tool]),
         )));
 
         return array_map(
-            fn(string $tool): array => $this->buildToolPayload($tool),
+            fn(string $tool): array => [self::TOOL_PAYLOAD_KEYS[$tool] => new \stdClass],
             $enabledTools,
         );
     }
 
-    private function buildToolPayload(string $tool): array
-    {
-        return match ($tool) {
-            'google_search' => ['googleSearch' => new \stdClass],
-            'url_context' => ['urlContext' => new \stdClass],
-            'code_execution' => ['codeExecution' => new \stdClass],
-            default => [],
-        };
-    }
-
     private function buildContentsFromChat(Chat $chat, bool $includeAssistant = true): array
     {
-        $messages = $chat->messages()
+        return $chat->messages()
             ->orderBy('sequence')
-            ->get(['role', 'content']);
-
-        $contents = [];
-
-        foreach ($messages as $message) {
-            if (!$includeAssistant && $message->role !== 'user') {
-                continue;
-            }
-
-            $role = $message->role === 'assistant' ? 'model' : 'user';
-
-            $contents[] = [
-                'role' => $role,
+            ->get(['role', 'content'])
+            ->filter(fn($message): bool => $includeAssistant || $message->role === 'user')
+            ->map(fn($message): array => [
+                'role' => $message->role === 'assistant' ? 'model' : 'user',
                 'parts' => [
                     ['text' => $message->content],
                 ],
-            ];
-        }
-
-        return $contents;
+            ])
+            ->values()
+            ->all();
     }
 }

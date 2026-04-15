@@ -27,11 +27,6 @@ export default function DailySnapshotReport({
     cases: {
         length: number;
     };
-    responseStats: {
-        last24h: number;
-        dailyAvg: number;
-        allTime: number;
-    };
 }) {
     return (
         <section className="col-span-3 rounded-[28px] border border-sidebar-accent bg-linear-to-br from-emerald-50 via-card to-sky-50 p-6 shadow-sm dark:from-emerald-950 dark:to-sky-950">

@@ -6,16 +6,9 @@ import type {
     OutputType,
 } from './assistant';
 
-export type CountSeries = {
+export type ChartSeries = {
     labels: string[];
     values: number[];
-};
-
-export type ChartSeries = CountSeries;
-
-export type DayBucket = {
-    key: string;
-    label: string;
 };
 
 export type DashboardUseLogCaseRow = {

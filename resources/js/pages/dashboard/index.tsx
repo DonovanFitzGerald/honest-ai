@@ -95,6 +95,76 @@ export default function Dashboard() {
         day: 'numeric',
         year: 'numeric',
     }).format(new Date());
+    const metricCards = [
+        {
+            title: 'Prompts in last 24h',
+            value: formatCount(promptStats.last24h),
+            detail: buildDeltaLabel(promptStats.last24h, promptStats.dailyAvg),
+            icon: <FileText className="h-5 w-5" />,
+        },
+        {
+            title: 'Responses in last 24h',
+            value: formatCount(responseStats.last24h),
+            detail: buildDeltaLabel(
+                responseStats.last24h,
+                responseStats.dailyAvg,
+            ),
+            icon: <MessagesSquare className="h-5 w-5" />,
+        },
+        {
+            title: 'Tokens in last 24h',
+            value: formatCompact(tokenStats.last24h),
+            detail: buildDeltaLabel(tokenStats.last24h, tokenStats.dailyAvg),
+            icon: <Zap className="h-5 w-5" />,
+        },
+        {
+            title: 'Average tokens per response',
+            value: formatCount(avgTokensPerResponse),
+            detail:
+                responseStats.last24h > 0
+                    ? 'Based on responses generated in the last 24 hours'
+                    : 'No responses recorded in the last 24 hours',
+            icon: <Sparkles className="h-5 w-5" />,
+        },
+    ];
+    const breakdownCards = [
+        {
+            title: 'Top input type',
+            leadLabel: capitalizeLabel(inputCounts.labels[0] ?? 'None'),
+            leadValue: inputCounts.values[0] ?? 0,
+            entries: topEntries(inputCounts.labels, inputCounts.values),
+            series: inputCounts,
+            colorFrom: '#A7F3D0',
+            colorTo: '#10B981',
+        },
+        {
+            title: 'Top output type',
+            leadLabel: capitalizeLabel(outputCounts.labels[0] ?? 'None'),
+            leadValue: outputCounts.values[0] ?? 0,
+            entries: topEntries(outputCounts.labels, outputCounts.values),
+            series: outputCounts,
+            colorFrom: '#FDE68A',
+            colorTo: '#F59E0B',
+        },
+        {
+            title: 'Top assistant role',
+            leadLabel: capitalizeLabel(roleCounts.labels[0] ?? 'None'),
+            leadValue: roleCounts.values[0] ?? 0,
+            entries: topEntries(roleCounts.labels, roleCounts.values),
+            series: roleCounts,
+            colorFrom: '#BFDBFE',
+            colorTo: '#2563EB',
+        },
+        {
+            title: 'Most used model',
+            leadLabel: modelCounts.labels[0] ?? 'None',
+            leadValue: modelCounts.values[0] ?? 0,
+            entries: topEntries(modelCounts.labels, modelCounts.values),
+            series: modelCounts,
+            colorFrom: '#E9D5FF',
+            colorTo: '#7C3AED',
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -107,7 +177,6 @@ export default function Dashboard() {
                         tokenStats={tokenStats}
                         weeklyShare={weeklyShare}
                         cases={cases}
-                        responseStats={responseStats}
                     />
                     <PromptTrendCard
                         promptTrend={promptTrend}
@@ -123,101 +192,16 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <MetricCard
-                        title="Prompts in last 24h"
-                        value={formatCount(promptStats.last24h)}
-                        detail={buildDeltaLabel(
-                            promptStats.last24h,
-                            promptStats.dailyAvg,
-                        )}
-                        icon={<FileText className="h-5 w-5" />}
-                    />
-                    <MetricCard
-                        title="Responses in last 24h"
-                        value={formatCount(responseStats.last24h)}
-                        detail={buildDeltaLabel(
-                            responseStats.last24h,
-                            responseStats.dailyAvg,
-                        )}
-                        icon={<MessagesSquare className="h-5 w-5" />}
-                    />
-                    <MetricCard
-                        title="Tokens in last 24h"
-                        value={formatCompact(tokenStats.last24h)}
-                        detail={buildDeltaLabel(
-                            tokenStats.last24h,
-                            tokenStats.dailyAvg,
-                        )}
-                        icon={<Zap className="h-5 w-5" />}
-                    />
-                    <MetricCard
-                        title="Average tokens per response"
-                        value={formatCount(avgTokensPerResponse)}
-                        detail={
-                            responseStats.last24h > 0
-                                ? 'Based on responses generated in the last 24 hours'
-                                : 'No responses recorded in the last 24 hours'
-                        }
-                        icon={<Sparkles className="h-5 w-5" />}
-                    />
+                    {metricCards.map((card) => (
+                        <MetricCard key={card.title} {...card} />
+                    ))}
                 </div>
 
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(340px,1.2fr)]">
                     <div className="grid gap-4 sm:grid-cols-2 xl:col-span-2">
-                        <BreakdownCard
-                            title="Top input type"
-                            leadLabel={capitalizeLabel(
-                                inputCounts.labels[0] ?? 'None',
-                            )}
-                            leadValue={inputCounts.values[0] ?? 0}
-                            entries={topEntries(
-                                inputCounts.labels,
-                                inputCounts.values,
-                            )}
-                            series={inputCounts}
-                            colorFrom="#A7F3D0"
-                            colorTo="#10B981"
-                        />
-                        <BreakdownCard
-                            title="Top output type"
-                            leadLabel={capitalizeLabel(
-                                outputCounts.labels[0] ?? 'None',
-                            )}
-                            leadValue={outputCounts.values[0] ?? 0}
-                            entries={topEntries(
-                                outputCounts.labels,
-                                outputCounts.values,
-                            )}
-                            series={outputCounts}
-                            colorFrom="#FDE68A"
-                            colorTo="#F59E0B"
-                        />
-                        <BreakdownCard
-                            title="Top assistant role"
-                            leadLabel={capitalizeLabel(
-                                roleCounts.labels[0] ?? 'None',
-                            )}
-                            leadValue={roleCounts.values[0] ?? 0}
-                            entries={topEntries(
-                                roleCounts.labels,
-                                roleCounts.values,
-                            )}
-                            series={roleCounts}
-                            colorFrom="#BFDBFE"
-                            colorTo="#2563EB"
-                        />
-                        <BreakdownCard
-                            title="Most used model"
-                            leadLabel={modelCounts.labels[0] ?? 'None'}
-                            leadValue={modelCounts.values[0] ?? 0}
-                            entries={topEntries(
-                                modelCounts.labels,
-                                modelCounts.values,
-                            )}
-                            series={modelCounts}
-                            colorFrom="#E9D5FF"
-                            colorTo="#7C3AED"
-                        />
+                        {breakdownCards.map((card) => (
+                            <BreakdownCard key={card.title} {...card} />
+                        ))}
                     </div>
 
                     <div className="space-y-4">

@@ -27,7 +27,6 @@ class MessageSeeder extends Seeder
             $model = fake()->randomElement($assistantModels);
             $modelKey = $model['value'];
 
-
             for ($i = 1; $i <= $messageCount; $i++) {
                 $isUser = $i % 2 !== 0;
                 if ($isUser) {

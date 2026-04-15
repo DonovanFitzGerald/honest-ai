@@ -14,7 +14,6 @@ import type { ChartOptions } from 'chart.js';
 import type {
     ChartSeries,
     DashboardAssistantResponseRow,
-    DayBucket,
 } from '@/types/dashboard';
 
 ChartJS.register(
@@ -29,10 +28,6 @@ ChartJS.register(
     Tooltip,
 );
 
-export function sumSeries(series: ChartSeries): number {
-    return series.values.reduce((a, b) => a + b, 0);
-}
-
 export type WindowStats = {
     last24h: number;
     last7d: number;
@@ -45,6 +40,11 @@ export type WindowStats = {
 export type DailyValue = {
     label: string;
     value: number;
+};
+
+type DayBucket = {
+    key: string;
+    label: string;
 };
 
 export type EnergyUsageStats = {
@@ -194,30 +194,6 @@ export function makePieData(
     };
 }
 
-export function makeLineData(
-    label: string,
-    labels: string[],
-    values: number[],
-    color: string,
-) {
-    return {
-        labels,
-        datasets: [
-            {
-                label,
-                data: values,
-                borderColor: color,
-                backgroundColor: color + '33',
-                borderWidth: 2,
-                pointRadius: 3,
-                pointHoverRadius: 5,
-                fill: true,
-                tension: 0.4,
-            },
-        ],
-    };
-}
-
 export function makeBarData(
     label: string,
     labels: string[],
@@ -326,19 +302,6 @@ export const pieChartOptions: ChartOptions<'pie'> = {
                 padding: 10,
                 boxWidth: 20,
             },
-        },
-    },
-};
-
-export const lineChartOptions: ChartOptions<'line'> = {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-        x: { grid: { display: false }, border: { display: false } },
-        y: {
-            ticks: { display: false },
-            grid: { display: false },
-            border: { display: false },
         },
     },
 };

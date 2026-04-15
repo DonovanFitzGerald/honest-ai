@@ -9,6 +9,11 @@ type ChatApiRequestOptions = {
     signal?: AbortSignal;
 };
 
+type JsonEndpoint = {
+    method: string;
+    url: string;
+};
+
 type SendChatMessageResponse = {
     userMessage: Message;
     assistantMessage: Message;
@@ -34,46 +39,36 @@ const throwIfNotOk = (response: Response): Response => {
     return response;
 };
 
+const postJson = async <T>(
+    endpoint: JsonEndpoint,
+    body: Record<string, unknown>,
+    options: ChatApiRequestOptions,
+): Promise<T> => {
+    const response = await fetch(endpoint.url, {
+        method: endpoint.method,
+        headers: createJsonHeaders(options.csrfToken),
+        body: JSON.stringify(body),
+        signal: options.signal,
+    });
+
+    return (await throwIfNotOk(response).json()) as T;
+};
+
 async function sendChatMessage(
     chatId: Chat['id'],
     input: ChatSendInput,
     options: ChatApiRequestOptions,
 ): Promise<SendChatMessageResponse> {
-    const endpoint = chatMessages.store(chatId);
-    const response = await fetch(endpoint.url, {
-        method: endpoint.method,
-        headers: createJsonHeaders(options.csrfToken),
-        body: JSON.stringify({
+    return postJson<SendChatMessageResponse>(
+        chatMessages.store(chatId),
+        {
             content: input.content,
             model: input.model,
             thinking_level: input.thinkingLevel,
             tools: input.tools,
-        }),
-        signal: options.signal,
-    });
-
-    return (await throwIfNotOk(response).json()) as SendChatMessageResponse;
-}
-
-async function createUseLog(
-    chatId: Chat['id'],
-    model: ChatSendInput['model'],
-    options: ChatApiRequestOptions,
-): Promise<UseLog> {
-    const endpoint = chatUseLogs.store(chatId);
-    const response = await fetch(endpoint.url, {
-        method: endpoint.method,
-        headers: createJsonHeaders(options.csrfToken),
-        body: JSON.stringify(model ? { model } : {}),
-        signal: options.signal,
-    });
-
-    const data = (await throwIfNotOk(response).json()) as CreateUseLogResponse;
-
-    return {
-        ...data.useLog,
-        parsed: data.parsed,
-    };
+        },
+        options,
+    );
 }
 
 const parseErrorResponse = async (
@@ -156,11 +151,16 @@ const requestUseLog = async (
     csrfToken: string,
 ) => {
     try {
-        const nextUseLog = await createUseLog(chatId, model, {
-            csrfToken,
-        });
+        const data = await postJson<CreateUseLogResponse>(
+            chatUseLogs.store(chatId),
+            model ? { model } : {},
+            { csrfToken },
+        );
 
-        return nextUseLog;
+        return {
+            ...data.useLog,
+            parsed: data.parsed,
+        };
     } catch (error) {
         if (
             error instanceof Response &&

@@ -61,7 +61,6 @@ export type AssistantModelOption = ModelOptionBase & {
     supports_json_mode: boolean;
     thinking_levels?: Exclude<ThinkingLevel, null>[];
     built_in_tools: BuiltInTool[];
-    thinking_level: ThinkingLevel;
 };
 
 export type AssistantModelsSharedData = {

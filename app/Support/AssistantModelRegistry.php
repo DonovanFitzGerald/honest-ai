@@ -22,38 +22,6 @@ class AssistantModelRegistry
         return array_keys($this->active());
     }
 
-    public function all_models(): array
-    {
-        return collect($this->all())
-            ->mapWithKeys(fn(array $model, string $key) => [
-                $key => [
-                    'label' => $model['label'],
-                    'provider' => $model['provider'],
-                    'active' => (bool) ($model['active'] ?? false),
-                    'capabilities' => [
-                        'tools' => (bool) data_get($model, 'capabilities.tools', false),
-                        'vision' => (bool) data_get($model, 'capabilities.vision', false),
-                        'json_mode' => (bool) data_get($model, 'capabilities.json_mode', false),
-                        'thinking_levels' => array_values(data_get($model, 'capabilities.thinking_levels', [])),
-                        'built_in_tools' => array_values(data_get($model, 'capabilities.built_in_tools', [])),
-                    ],
-                    'limits' => [
-                        'context_window' => data_get($model, 'limits.context_window'),
-                        'max_output_tokens' => data_get($model, 'limits.max_output_tokens'),
-                    ],
-                    'pricing' => [
-                        'input_per_1m' => data_get($model, 'pricing.input_per_1m'),
-                        'output_per_1m' => data_get($model, 'pricing.output_per_1m'),
-                    ],
-                    'ui' => [
-                        'badge' => data_get($model, 'ui.badge'),
-                        'description' => data_get($model, 'ui.description'),
-                    ],
-                ],
-            ])
-            ->all();
-    }
-
     public function options(): array
     {
         return collect($this->active())
@@ -66,16 +34,11 @@ class AssistantModelRegistry
                 'supports_tools' => (bool) data_get($model, 'capabilities.tools', false),
                 'supports_vision' => (bool) data_get($model, 'capabilities.vision', false),
                 'supports_json_mode' => (bool) data_get($model, 'capabilities.json_mode', false),
-                'thinking_levels' => array_values(data_get($model, 'capabilities.thinking_levels', [])),
-                'built_in_tools' => array_values(data_get($model, 'capabilities.built_in_tools', [])),
+                'thinking_levels' => $this->capabilityList($model, 'thinking_levels'),
+                'built_in_tools' => $this->capabilityList($model, 'built_in_tools'),
             ])
             ->values()
             ->all();
-    }
-
-    public function find(string $key): ?array
-    {
-        return $this->all_models()[$key] ?? null;
     }
 
     public function default(): string
@@ -89,11 +52,6 @@ class AssistantModelRegistry
         return array_key_first($this->active())
             ?? array_key_first($this->all())
             ?? '';
-    }
-
-    public function defaultModel(): ?array
-    {
-        return $this->find($this->default());
     }
 
     public function resolveKey(?string $key, bool $activeOnly = true): ?string
@@ -113,25 +71,27 @@ class AssistantModelRegistry
         return array_key_first($models);
     }
 
-    public function thinkingLevelsFor(?string $key): array
+    public function capabilitiesFor(?string $key): array
     {
-        $resolvedKey = $this->resolveKey($key);
+        $model = $this->resolvedModel($key);
 
-        if (!is_string($resolvedKey) || $resolvedKey === '') {
-            return [];
-        }
-
-        return array_values(data_get($this->all()[$resolvedKey] ?? [], 'capabilities.thinking_levels', []));
+        return [
+            'thinking_levels' => $this->capabilityList($model, 'thinking_levels'),
+            'built_in_tools' => $this->capabilityList($model, 'built_in_tools'),
+        ];
     }
 
-    public function builtInToolsFor(?string $key): array
+    private function resolvedModel(?string $key): array
     {
         $resolvedKey = $this->resolveKey($key);
 
-        if (!is_string($resolvedKey) || $resolvedKey === '') {
-            return [];
-        }
+        return is_string($resolvedKey) && $resolvedKey !== ''
+            ? $this->all()[$resolvedKey] ?? []
+            : [];
+    }
 
-        return array_values(data_get($this->all()[$resolvedKey] ?? [], 'capabilities.built_in_tools', []));
+    private function capabilityList(array $model, string $name): array
+    {
+        return array_values(data_get($model, "capabilities.{$name}", []));
     }
 }

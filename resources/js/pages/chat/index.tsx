@@ -6,8 +6,7 @@ import AppLayout from '@/layouts/app-layout';
 import { UseLogSidebar } from '@/pages/chat/use-log-sidebar';
 import type { Chat, Message, UseLog } from '@/types/assistant';
 import type { AssistantModelsSharedData } from '@/types/assistant-models';
-import { parseErrorResponse, requestUseLog } from './chat.api';
-import { sendChatMessage } from './chat.api';
+import { parseErrorResponse, requestUseLog, sendChatMessage } from './chat.api';
 import type { ChatSendInput } from './chat.types';
 import ChatBox from './components/chat-box';
 
@@ -109,37 +108,22 @@ export default function Show({
                 setUseLog(nextUseLog);
             }
         } catch (error) {
-            if (error instanceof Response) {
-                const errors = await parseErrorResponse(error);
-                if (!errors) {
-                    setMessages((prev) =>
-                        prev.filter(
-                            (message) => message.id !== optimisticMessage.id,
-                        ),
-                    );
-                    return;
-                }
+            setMessages((prev) =>
+                prev.filter((message) => message.id !== optimisticMessage.id),
+            );
 
-                setMessages((prev) =>
-                    prev.filter(
-                        (message) => message.id !== optimisticMessage.id,
-                    ),
-                );
-                setInputText(trimmed);
-                setSendErrors(errors);
-                console.error(error);
-            } else {
-                setMessages((prev) =>
-                    prev.filter(
-                        (message) => message.id !== optimisticMessage.id,
-                    ),
-                );
-                setInputText(trimmed);
-                setSendErrors([
-                    'We could not send your message. Please try again.',
-                ]);
-                console.error(error);
+            const errors =
+                error instanceof Response
+                    ? await parseErrorResponse(error)
+                    : ['We could not send your message. Please try again.'];
+
+            if (!errors) {
+                return;
             }
+
+            setInputText(trimmed);
+            setSendErrors(errors);
+            console.error(error);
         } finally {
             setSending(false);
         }
