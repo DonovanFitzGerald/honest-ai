@@ -37,12 +37,16 @@ COPY . .
 COPY --from=composer-builder /app/vendor /app/vendor
 
 RUN npm run build:ssr
+RUN npm prune --omit=dev
 
 FROM node:20-alpine
 
 WORKDIR /app
+ENV NODE_ENV=production
 
+COPY --from=node-builder /app/package.json /app/package-lock.json /app/
+COPY --from=node-builder /app/node_modules /app/node_modules
 COPY --from=node-builder /app/bootstrap/ssr /app/bootstrap/ssr
 
 EXPOSE 13714
-CMD ["node", "/app/bootstrap/ssr/ssr.mjs"]
+CMD ["node", "/app/bootstrap/ssr/ssr.js"]
