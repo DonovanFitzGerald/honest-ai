@@ -2,17 +2,8 @@ import AppLogoIcon from './app-logo-icon';
 
 export default function AppLogo() {
     return (
-        <>
-            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                <AppLogoIcon
-                    className="size-5 fill-current text-accent"
-                    fill={
-                        document.documentElement.classList.contains('dark')
-                            ? 'white'
-                            : 'black'
-                    }
-                />
-            </div>
-        </>
+        <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
+            <AppLogoIcon className="size-5 fill-current text-accent [--app-logo-contrast:black] dark:[--app-logo-contrast:white]" />
+        </div>
     );
 }

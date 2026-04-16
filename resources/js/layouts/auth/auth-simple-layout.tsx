@@ -18,16 +18,7 @@ export default function AuthSimpleLayout({
                             className="flex flex-col items-center gap-2 font-medium"
                         >
                             <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                                <AppLogoIcon
-                                    className="size-9 fill-current text-foreground"
-                                    fill={
-                                        document.documentElement.classList.contains(
-                                            'dark',
-                                        )
-                                            ? 'black'
-                                            : 'white'
-                                    }
-                                />
+                                <AppLogoIcon className="size-9 fill-current text-foreground [--app-logo-contrast:white] dark:[--app-logo-contrast:black]" />
                             </div>
                             <span className="sr-only">{title}</span>
                         </Link>

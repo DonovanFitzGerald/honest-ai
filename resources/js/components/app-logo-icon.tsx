@@ -1,6 +1,8 @@
 import type { SVGAttributes } from 'react';
 
 export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
+    const strokeColor = props.fill ?? 'var(--app-logo-contrast, currentColor)';
+
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -13,13 +15,13 @@ export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
             <path
                 d="M27.6596 0L0 42.1157L60 52L27.6596 0Z"
                 fill="url(#paint0_linear_125_673)"
-                stroke={props.fill}
+                stroke={strokeColor}
                 strokeWidth="1"
             />
             <path
                 d="M27.8118 0L24 69L60 51.537L27.8118 0Z"
                 fill="currentColor"
-                stroke={props.fill}
+                stroke={strokeColor}
                 strokeWidth="1"
             />
             <defs>
@@ -32,7 +34,7 @@ export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
                     gradientUnits="userSpaceOnUse"
                 >
                     <stop stopColor="currentColor" />
-                    <stop offset="0.658654" stopColor={props.fill} />
+                    <stop offset="0.658654" stopColor={strokeColor} />
                 </linearGradient>
             </defs>
         </svg>

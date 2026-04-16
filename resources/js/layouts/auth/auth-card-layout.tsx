@@ -27,16 +27,7 @@ export default function AuthCardLayout({
                     className="flex items-center gap-2 self-center font-medium"
                 >
                     <div className="flex h-9 w-9 items-center justify-center">
-                        <AppLogoIcon
-                            className="size-9 fill-current text-foreground"
-                            fill={
-                                document.documentElement.classList.contains(
-                                    'dark',
-                                )
-                                    ? 'black'
-                                    : 'white'
-                            }
-                        />
+                        <AppLogoIcon className="size-9 fill-current text-foreground [--app-logo-contrast:white] dark:[--app-logo-contrast:black]" />
                     </div>
                 </Link>
 
