@@ -19,6 +19,7 @@ export default function Show({
     messages: Message[];
     useLog: UseLog | null;
 }) {
+    // Fetch data from controller post
     const { assistantModels } = usePage().props;
 
     const breadcrumbs = [
@@ -32,6 +33,7 @@ export default function Show({
     const preferredModel = getPreferredModel(messages, assistantModels);
     const conversationDiv = useRef<HTMLDivElement | null>(null);
 
+    // Initial chat state
     useEffect(() => {
         setInputText('');
         setMessages(initialMessages ?? []);
@@ -40,6 +42,7 @@ export default function Show({
         setSending(false);
     }, [chat.id, initialMessages, initialUseLog]);
 
+    // csrf Token for HTTP requests
     const csrfToken =
         (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)
             ?.content ?? '';
@@ -50,10 +53,12 @@ export default function Show({
         el.scrollTo({ top: el.scrollHeight, behavior });
     };
 
+    // Scroll to bottom after sending / receiving message
     useEffect(() => {
         scrollToBottom('smooth');
     }, [messages.length]);
 
+    // Instant scroll to bottom on inital load
     useEffect(() => {
         scrollToBottom('auto');
     }, []);
@@ -62,10 +67,10 @@ export default function Show({
         if (sendErrors.length > 0) {
             setSendErrors([]);
         }
-
         setInputText(nextValue);
     };
 
+    // Manage state updates when sending request
     const handleInputSubmit = async ({
         content,
         model,
@@ -129,6 +134,7 @@ export default function Show({
         }
     };
 
+    // MARK: HTML
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <div key={chat.id} className="flex h-[90vh] flex-row">
@@ -182,6 +188,8 @@ export default function Show({
         </AppLayout>
     );
 }
+
+// MARK: Helpers
 
 const createOptimisticUserMessage = (
     chatId: Chat['id'],
